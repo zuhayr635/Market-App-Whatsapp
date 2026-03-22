@@ -5,6 +5,7 @@ import Link from "next/link"
 import { ShoppingCart, LogIn, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { addToCart } from "@/lib/cart"
 
 interface AddToCartButtonProps {
   isLoggedIn: boolean
@@ -17,6 +18,8 @@ interface AddToCartButtonProps {
 export function AddToCartButton({
   isLoggedIn,
   outOfStock,
+  productId,
+  variationId,
   quantity,
 }: AddToCartButtonProps) {
   const [loading, setLoading] = useState(false)
@@ -35,13 +38,18 @@ export function AddToCartButton({
 
   const handleAddToCart = async () => {
     setLoading(true)
-    // Cart API will be implemented in Faz 3
-    // Simulate a brief delay for UX
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    toast.success("Ürün sepete eklendi!", {
-      description: `${quantity} adet ürün sepetinize eklendi.`,
-    })
-    setLoading(false)
+    try {
+      await addToCart(productId, variationId, quantity)
+      toast.success("Ürün sepete eklendi!", {
+        description: `${quantity} adet ürün sepetinize eklendi.`,
+      })
+      // Dispatch custom event so header can update cart count
+      window.dispatchEvent(new CustomEvent("cart-updated"))
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Sepete eklenemedi")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

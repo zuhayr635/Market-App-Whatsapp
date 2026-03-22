@@ -28,6 +28,7 @@ import {
 import { productSchema, type ProductInput } from "@/lib/validations/product"
 import { generateSlug } from "@/lib/utils/slug"
 import { VariationManager } from "@/components/admin/variation-manager"
+import { ImageGalleryManager, type PendingImage } from "@/components/admin/image-gallery-manager"
 
 // ---------- Types ----------
 
@@ -163,6 +164,9 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
   // Submitting state
   const [submitting, setSubmitting] = useState(false)
 
+  // Pending images for create mode
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([])
+
   // Fetch categories
   useEffect(() => {
     fetch("/api/admin/categories")
@@ -273,9 +277,31 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
       })
 
       if (res.ok) {
+        const product = await res.json()
+
+        // In create mode, save pending images to the new product
+        if (!isEdit && pendingImages.length > 0) {
+          for (const img of pendingImages) {
+            try {
+              await fetch(`/api/admin/products/${product.id}/images`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  url: img.url,
+                  altText: img.altText || null,
+                  title: img.title || null,
+                  description: img.description || null,
+                  isFeatured: img.isFeatured,
+                }),
+              })
+            } catch {
+              // Continue with remaining images
+            }
+          }
+        }
+
         toast.success(isEdit ? "Ürün güncellendi" : "Ürün oluşturuldu")
         if (!isEdit) {
-          const product = await res.json()
           router.push(`/admin/urunler/${product.id}`)
         }
       } else {
@@ -398,6 +424,12 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
               </div>
             </div>
           </Section>
+
+          {/* Ürün Görselleri */}
+          <ImageGalleryManager
+            productId={productId}
+            onPendingImagesChange={setPendingImages}
+          />
 
           {/* Fiyatlandırma */}
           <Section title="Fiyatlandırma">

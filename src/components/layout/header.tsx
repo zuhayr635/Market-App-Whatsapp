@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, ShoppingCart, User, Menu, Heart, Package, LogOut, ChevronDown, Phone, Mail } from "lucide-react"
+import { Search, User, Menu, Heart, Package, LogOut, ChevronDown, Phone, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -15,14 +15,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
+import { MiniCart } from "@/components/store/mini-cart"
 
 export function Header() {
   const { data: session } = useSession()
   const [currency, setCurrency] = useState<"USD" | "TL">("USD")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
-
-  const cartItemCount = 0 // TODO: Connect to cart state
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-[var(--market-header-bg)] shadow-sm">
@@ -321,17 +320,7 @@ export function Header() {
           </Link>
 
           {/* Cart */}
-          <Link href="/sepet" className="relative">
-            <Button variant="ghost" size="icon">
-              <ShoppingCart className="size-5" />
-              <span className="sr-only">Sepet</span>
-            </Button>
-            {cartItemCount > 0 && (
-              <Badge className="absolute -right-1 -top-1 flex size-5 items-center justify-center p-0 text-[10px]">
-                {cartItemCount}
-              </Badge>
-            )}
-          </Link>
+          <MiniCart />
         </div>
       </div>
 
