@@ -30,7 +30,7 @@ const menuItems = [
   { label: "Bannerlar", icon: Image, href: "/admin/bannerlar" },
   { label: "Sayfalar", icon: FileText, href: "/admin/sayfalar" },
   { type: "separator" as const },
-  { label: "Ayarlar", icon: Settings, href: "/admin/ayarlar" },
+  { label: "Ayarlar", icon: Settings, href: "/admin/ayarlar/genel" },
   { label: "Döviz Kuru", icon: TrendingUp, href: "/admin/ayarlar/doviz" },
   { label: "Tema", icon: Palette, href: "/admin/tema" },
   { label: "Raporlar", icon: BarChart3, href: "/admin/raporlar" },
