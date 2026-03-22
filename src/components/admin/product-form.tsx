@@ -27,6 +27,7 @@ import {
 
 import { productSchema, type ProductInput } from "@/lib/validations/product"
 import { generateSlug } from "@/lib/utils/slug"
+import { VariationManager } from "@/components/admin/variation-manager"
 
 // ---------- Types ----------
 
@@ -578,6 +579,9 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
               )}
             </div>
           </Section>
+
+          {/* Varyasyonlar */}
+          <VariationManager productId={productId} />
 
           {/* Boyut ve Ağırlık */}
           <Section title="Boyut ve Ağırlık" defaultOpen={false}>
