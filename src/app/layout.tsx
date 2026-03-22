@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { cn } from "@/lib/utils"
 import { AuthProvider } from "@/components/providers/session-provider"
+import { WhatsAppWarningModal } from "@/components/auth/whatsapp-warning-modal"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -20,6 +21,7 @@ export default function RootLayout({
     <html lang="tr" className={cn("font-sans", inter.variable)}>
       <body className={inter.className}>
         <AuthProvider>{children}</AuthProvider>
+        <WhatsAppWarningModal />
       </body>
     </html>
   )
