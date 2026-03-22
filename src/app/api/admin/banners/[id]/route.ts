@@ -14,7 +14,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   const body = await req.json()
-  const { title, subtitle, image, buttonText, buttonLink, startDate, endDate, sortOrder, status, position } = body
+  const { title, subtitle, image, mediaType, buttonText, buttonLink, startDate, endDate, sortOrder, status, position, duration } = body
 
   const banner = await db.banner.update({
     where: { id: params.id },
@@ -22,6 +22,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       title: title !== undefined ? title || null : undefined,
       subtitle: subtitle !== undefined ? subtitle || null : undefined,
       image: image || undefined,
+      mediaType: mediaType || undefined,
       buttonText: buttonText !== undefined ? buttonText || null : undefined,
       buttonLink: buttonLink !== undefined ? buttonLink || null : undefined,
       startDate: startDate !== undefined ? (startDate ? new Date(startDate) : null) : undefined,
@@ -29,6 +30,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       sortOrder: sortOrder !== undefined ? Number(sortOrder) : undefined,
       status: status !== undefined ? Boolean(status) : undefined,
       position: position || undefined,
+      duration: duration !== undefined ? Number(duration) : undefined,
     },
   })
 

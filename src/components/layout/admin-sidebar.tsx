@@ -15,6 +15,7 @@ import {
   Settings,
   Palette,
   BarChart3,
+  Activity,
   PanelLeftClose,
   PanelLeftOpen,
   TrendingUp,
@@ -40,6 +41,7 @@ const menuItems = [
   { label: "SMS Ayarları", icon: MessageSquare, href: "/admin/ayarlar/sms" },
   { label: "Tema", icon: Palette, href: "/admin/tema" },
   { label: "Raporlar", icon: BarChart3, href: "/admin/raporlar" },
+  { label: "Sistem Logları", icon: Activity, href: "/admin/sistem-loglari" },
 ] as const
 
 type MenuItem =

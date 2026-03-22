@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 
 interface ThemeColors {
   // Ana Renkler
@@ -37,27 +38,27 @@ interface ThemeColors {
 }
 
 const defaults: ThemeColors = {
-  primary: "#2563eb",
-  secondary: "#64748b",
-  accent: "#f59e0b",
-  bg_page: "#f8fafc",
+  primary: "#B45309",
+  secondary: "#78716C",
+  accent: "#166534",
+  bg_page: "#FEFBF6",
   bg_card: "#ffffff",
-  bg_header: "#1e293b",
-  bg_footer: "#0f172a",
-  text_primary: "#0f172a",
-  text_secondary: "#64748b",
-  text_heading: "#1e293b",
-  text_link: "#2563eb",
-  btn_primary_bg: "#2563eb",
+  bg_header: "#FEFBF6",
+  bg_footer: "#1C1917",
+  text_primary: "#1C1917",
+  text_secondary: "#78716C",
+  text_heading: "#1C1917",
+  text_link: "#B45309",
+  btn_primary_bg: "#B45309",
   btn_primary_text: "#ffffff",
-  btn_secondary_bg: "#e2e8f0",
-  btn_secondary_text: "#0f172a",
-  color_whatsapp: "#25d366",
-  color_cart: "#2563eb",
+  btn_secondary_bg: "#F5F0EB",
+  btn_secondary_text: "#1C1917",
+  color_whatsapp: "#25D366",
+  color_cart: "#B45309",
   color_favorite: "#ef4444",
   color_discount_badge: "#ef4444",
   color_new_badge: "#22c55e",
-  border_radius: "0.5rem",
+  border_radius: "0.75rem",
 }
 
 const presets: { name: string; label: string; colors: Partial<ThemeColors> }[] = [
@@ -81,6 +82,17 @@ const presets: { name: string; label: string; colors: Partial<ThemeColors> }[] =
       text_primary: "#f5f5f5", text_secondary: "#a8a29e", text_heading: "#fef3c7", text_link: "#f59e0b",
       btn_primary_bg: "#f59e0b", btn_primary_text: "#000000",
       border_radius: "0.375rem",
+    },
+  },
+  {
+    name: "warm-luxury",
+    label: "Warm Luxury",
+    colors: {
+      primary: "#B45309", secondary: "#78716C", accent: "#166534",
+      bg_page: "#FEFBF6", bg_card: "#ffffff", bg_header: "#FEFBF6", bg_footer: "#1C1917",
+      text_primary: "#1C1917", text_secondary: "#78716C", text_heading: "#1C1917", text_link: "#B45309",
+      btn_primary_bg: "#B45309", btn_primary_text: "#ffffff",
+      border_radius: "0.75rem",
     },
   },
   {
@@ -156,6 +168,9 @@ export default function TemaPage() {
     })
     if (res.ok) {
       injectTheme(colors)
+      toast.success("Tema kaydedildi! Değişiklikler sayfayı yenileyince görünecek.")
+    } else {
+      toast.error("Tema kaydedilemedi")
     }
     setSaving(false)
   }

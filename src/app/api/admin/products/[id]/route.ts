@@ -200,6 +200,46 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params
+    const body = await request.json()
+    const { priceUsd, priceTl, stockQty, status } = body
+
+    const product = await db.product.findUnique({ where: { id } })
+    if (!product) {
+      return NextResponse.json(
+        { error: "Ürün bulunamadı" },
+        { status: 404 }
+      )
+    }
+
+    const updateData: Record<string, unknown> = {}
+    if (priceUsd !== undefined) updateData.priceUsd = new Prisma.Decimal(priceUsd)
+    if (priceTl !== undefined) updateData.priceTl = new Prisma.Decimal(priceTl)
+    if (stockQty !== undefined) updateData.stockQty = parseInt(String(stockQty), 10)
+    if (status !== undefined && Object.values(ProductStatus).includes(status as ProductStatus)) {
+      updateData.status = status as ProductStatus
+    }
+
+    const updated = await db.product.update({
+      where: { id },
+      data: updateData,
+    })
+
+    return NextResponse.json(updated)
+  } catch (error) {
+    console.error("Product PATCH error:", error)
+    return NextResponse.json(
+      { error: "Ürün güncellenirken bir hata oluştu" },
+      { status: 500 }
+    )
+  }
+}
+
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: { id: string } }

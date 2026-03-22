@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { clearCache } from "@/lib/cache"
 
 async function checkAdmin() {
   const session = await auth()
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
   )
 
   await Promise.all(upserts)
+  clearCache("siteSettings")
 
   return NextResponse.json({ success: true })
 }

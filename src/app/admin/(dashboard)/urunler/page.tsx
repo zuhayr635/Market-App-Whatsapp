@@ -34,6 +34,8 @@ import {
   ChevronRight,
   MoreHorizontal,
   Image as ImageIcon,
+  Download,
+  Upload,
 } from "lucide-react"
 
 // ---------- Types ----------
@@ -175,6 +177,18 @@ export default function UrunlerPage() {
 
   // Bulk action
   const [bulkSubmitting, setBulkSubmitting] = useState(false)
+
+  // Quick edit inline
+  const [quickEditId, setQuickEditId] = useState<string | null>(null)
+  const [quickEditData, setQuickEditData] = useState({ priceUsd: "", priceTl: "", stockQty: "", status: "DRAFT" as string })
+  const [quickEditSubmitting, setQuickEditSubmitting] = useState(false)
+
+  // CSV Import
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
+  const [importError, setImportError] = useState("")
+  const [importSubmitting, setImportSubmitting] = useState(false)
+  const [importResult, setImportResult] = useState<{ created: number; errors: string[] } | null>(null)
 
   // Debounce search
   useEffect(() => {
@@ -349,6 +363,108 @@ export default function UrunlerPage() {
     }
   }
 
+  // ---------- Quick Edit Handlers ----------
+
+  const openQuickEdit = (product: Product) => {
+    setQuickEditId(product.id)
+    setQuickEditData({
+      priceUsd: String(Number(product.priceUsd).toFixed(2)),
+      priceTl: String(Number(product.priceTl).toFixed(2)),
+      stockQty: String(product.stockQty),
+      status: product.status,
+    })
+  }
+
+  const handleQuickEdit = async () => {
+    if (!quickEditId) return
+    setQuickEditSubmitting(true)
+    try {
+      const res = await fetch(`/api/admin/products/${quickEditId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          priceUsd: parseFloat(quickEditData.priceUsd),
+          priceTl: parseFloat(quickEditData.priceTl),
+          stockQty: parseInt(quickEditData.stockQty),
+          status: quickEditData.status,
+        }),
+      })
+      if (res.ok) {
+        setQuickEditId(null)
+        fetchProducts()
+      }
+    } catch { /* silently fail */ }
+    finally { setQuickEditSubmitting(false) }
+  }
+
+  // ---------- CSV Export ----------
+
+  const handleExport = async () => {
+    const params = new URLSearchParams({ limit: "1000", sort })
+    if (debouncedSearch) params.set("search", debouncedSearch)
+    if (filterCategory) params.set("categoryId", filterCategory)
+    if (filterStatus) params.set("status", filterStatus)
+
+    const res = await fetch(`/api/admin/products?${params}`)
+    if (!res.ok) return
+    const data = await res.json()
+
+    const rows = data.products.map((p: Product) => ({
+      id: p.id,
+      name: p.name,
+      sku: p.sku,
+      priceUsd: Number(p.priceUsd).toFixed(2),
+      priceTl: Number(p.priceTl).toFixed(2),
+      stockQty: p.stockQty,
+      status: p.status,
+      categories: p.categories.map((c: ProductCategory) => c.category.name).join("|"),
+    }))
+
+    const headers = Object.keys(rows[0] || {})
+    const csv = [headers.join(","), ...rows.map((r: Record<string, string | number>) => headers.map(h => JSON.stringify(r[h] ?? "")).join(","))].join("\n")
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `urunler-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  // ---------- CSV Import ----------
+
+  const handleImport = async () => {
+    if (!importFile) return
+    setImportSubmitting(true)
+    setImportError("")
+    setImportResult(null)
+    try {
+      const text = await importFile.text()
+      const lines = text.split("\n").filter(l => l.trim())
+      const headers = lines[0].split(",").map(h => h.replace(/^"|"$/g, "").trim())
+      const rows = lines.slice(1).map(line => {
+        const values = line.split(",").map(v => v.replace(/^"|"$/g, "").trim())
+        return Object.fromEntries(headers.map((h, i) => [h, values[i] || ""]))
+      })
+
+      const res = await fetch("/api/admin/products/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rows }),
+      })
+      const result = await res.json()
+      if (res.ok) {
+        setImportResult(result)
+        fetchProducts()
+      } else {
+        setImportError(result.error || "Bir hata oluştu")
+      }
+    } catch {
+      setImportError("Dosya okunamadı")
+    }
+    setImportSubmitting(false)
+  }
+
   const flatCats = flattenCategories(categories)
 
   const selectClass =
@@ -369,6 +485,14 @@ export default function UrunlerPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Upload className="size-4 mr-1.5" />
+            İçe Aktar
+          </Button>
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="size-4 mr-1.5" />
+            Dışa Aktar
+          </Button>
           <Button variant="outline" onClick={() => setQuickAddOpen(true)}>
             <Zap className="size-4 mr-1.5" />
             Hızlı Ekle
@@ -522,9 +646,9 @@ export default function UrunlerPage() {
             const thumb = product.images[0]
 
             return (
+              <div key={product.id}>
               <div
-                key={product.id}
-                className="grid grid-cols-[40px_60px_1fr_140px_100px_80px_90px_60px] items-center gap-3 border-b px-4 py-3 hover:bg-gray-50/50 transition-colors last:border-b-0"
+                className="grid grid-cols-[40px_60px_1fr_140px_100px_80px_90px_60px] items-center gap-3 border-b px-4 py-3 hover:bg-gray-50/50 transition-colors"
               >
                 {/* Checkbox */}
                 <div>
@@ -628,6 +752,10 @@ export default function UrunlerPage() {
                       }
                     />
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => openQuickEdit(product)}>
+                        <Zap className="size-3.5 mr-1.5" />
+                        Hızlı Düzenle
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         render={<Link href={`/admin/urunler/${product.id}`} />}
                       >
@@ -647,6 +775,36 @@ export default function UrunlerPage() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
+              </div>
+              {quickEditId === product.id && (
+                <div className="border-b bg-blue-50/50 px-4 py-3 grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-3 items-end">
+                  <div>
+                    <Label className="text-xs">Fiyat (USD)</Label>
+                    <Input type="number" step="0.01" value={quickEditData.priceUsd} onChange={e => setQuickEditData(d => ({ ...d, priceUsd: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Fiyat (TL)</Label>
+                    <Input type="number" step="0.01" value={quickEditData.priceTl} onChange={e => setQuickEditData(d => ({ ...d, priceTl: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Stok</Label>
+                    <Input type="number" value={quickEditData.stockQty} onChange={e => setQuickEditData(d => ({ ...d, stockQty: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Durum</Label>
+                    <select value={quickEditData.status} onChange={e => setQuickEditData(d => ({ ...d, status: e.target.value }))} className="flex h-8 w-full rounded-md border border-input bg-transparent px-2 text-sm">
+                      <option value="PUBLISHED">Yayında</option>
+                      <option value="DRAFT">Taslak</option>
+                      <option value="PENDING">Beklemede</option>
+                      <option value="HIDDEN">Gizli</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={handleQuickEdit} disabled={quickEditSubmitting}>{quickEditSubmitting ? "..." : "Kaydet"}</Button>
+                    <Button size="sm" variant="outline" onClick={() => setQuickEditId(null)}>İptal</Button>
+                  </div>
+                </div>
+              )}
               </div>
             )
           })
@@ -813,6 +971,39 @@ export default function UrunlerPage() {
           </div>
         </div>
       )}
+
+      {/* CSV Import Dialog */}
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>CSV&apos;den Ürün İçe Aktar</DialogTitle>
+            <DialogDescription>
+              CSV dosyası formatı: name, sku, priceUsd, priceTl, stockQty, shortDesc, status (PUBLISHED/DRAFT)
+            </DialogDescription>
+          </DialogHeader>
+          {importError && <div className="text-sm text-destructive">{importError}</div>}
+          {importResult && (
+            <div className="text-sm">
+              <p className="text-emerald-600">{importResult.created} ürün eklendi</p>
+              {importResult.errors.length > 0 && (
+                <div className="mt-2 text-destructive text-xs max-h-32 overflow-y-auto">
+                  {importResult.errors.map((e, i) => <p key={i}>{e}</p>)}
+                </div>
+              )}
+            </div>
+          )}
+          <div className="space-y-3">
+            <Label>CSV Dosyası</Label>
+            <Input type="file" accept=".csv" onChange={e => setImportFile(e.target.files?.[0] || null)} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportOpen(false)}>İptal</Button>
+            <Button onClick={handleImport} disabled={!importFile || importSubmitting}>
+              {importSubmitting ? "İçe Aktarılıyor..." : "İçe Aktar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Quick Add Dialog */}
       <Dialog open={quickAddOpen} onOpenChange={setQuickAddOpen}>

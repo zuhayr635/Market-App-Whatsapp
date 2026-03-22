@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { ProductStatus, Prisma } from "@/generated/prisma"
 import { generateSlug } from "@/lib/utils/slug"
 import { productSchema } from "@/lib/validations/product"
 
+async function checkAdmin() {
+  const session = await auth()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return session?.user && (session.user as any).type === "admin"
+}
+
 export async function GET(request: NextRequest) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { searchParams } = new URL(request.url)
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"))
@@ -95,6 +105,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const body = await request.json()
     const parsed = productSchema.safeParse(body)
@@ -128,8 +141,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Auto-calculate TL price if not provided (default 1:1 ratio, will be replaced by exchange rate later)
-    const priceTl = data.priceTl ?? data.priceUsd
+    // Auto-calculate TL price if not provided or zero
+    const priceTl = (data.priceTl && data.priceTl > 0) ? data.priceTl : data.priceUsd
 
     const product = await db.product.create({
       data: {

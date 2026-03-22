@@ -11,6 +11,7 @@ import {
   Star,
   Clock,
   Check,
+  ShoppingBag,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -181,6 +182,16 @@ export function ProductDetailClient({
   const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [linkCopied, setLinkCopied] = useState(false)
+
+  // Track recently viewed - call API on mount if user is logged in
+  useEffect(() => {
+    // Use fetch - don't block rendering
+    fetch("/api/user/recently-viewed", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId: product.id }),
+    }).catch(() => {}) // silently fail if not logged in
+  }, [product.id])
 
   // Computed prices
   const hasDiscount = useMemo(() => {
@@ -591,6 +602,81 @@ export function ProductDetailClient({
           </div>
         </section>
       )}
+
+      <RelatedProductsDisplay slug={product.slug} />
+      <RecentlyViewedSection />
     </>
+  )
+}
+
+function RelatedProductsDisplay({ slug }: { slug: string }) {
+  const [products, setProducts] = useState<any[]>([])
+
+  useEffect(() => {
+    fetch(`/api/products/${slug}/related`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { if (Array.isArray(data)) setProducts(data) })
+      .catch(() => {})
+  }, [slug])
+
+  if (products.length === 0) return null
+
+  return (
+    <div className="mt-12">
+      <h2 className="text-xl font-bold mb-4 text-stone-900">İlgili Ürünler</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {products.slice(0, 4).map((p: any) => (
+          <a key={p.id} href={`/urun/${p.slug}`} className="group">
+            <div className="aspect-square overflow-hidden rounded-xl border border-[#E7E0D8] bg-stone-50">
+              {p.images?.[0]?.url ? (
+                <img src={p.images[0].url} alt={p.images[0].altText || p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-stone-300">
+                  <ShoppingBag className="w-8 h-8" />
+                </div>
+              )}
+            </div>
+            <p className="mt-2 text-xs font-medium text-stone-800 line-clamp-2 group-hover:text-amber-700">{p.name}</p>
+            <p className="text-xs text-amber-700 font-semibold">${Number(p.priceUsd).toFixed(2)}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function RecentlyViewedSection() {
+  const [products, setProducts] = useState<any[]>([])
+
+  useEffect(() => {
+    fetch("/api/user/recently-viewed")
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.products) setProducts(data.products) })
+      .catch(() => {})
+  }, [])
+
+  if (products.length === 0) return null
+
+  return (
+    <div className="mt-12">
+      <h2 className="text-xl font-bold mb-4 text-stone-900">Son Görüntülenen Ürünler</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {products.slice(0, 4).map((p) => (
+          <a key={p.id} href={`/urun/${p.slug}`} className="group">
+            <div className="aspect-square overflow-hidden rounded-xl border border-[#E7E0D8] bg-stone-50">
+              {p.images?.[0]?.url ? (
+                <img src={p.images[0].url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-stone-300">
+                  <ShoppingBag className="w-8 h-8" />
+                </div>
+              )}
+            </div>
+            <p className="mt-2 text-xs font-medium text-stone-800 line-clamp-2 group-hover:text-amber-700">{p.name}</p>
+            <p className="text-xs text-amber-700 font-semibold">${Number(p.priceUsd).toFixed(2)}</p>
+          </a>
+        ))}
+      </div>
+    </div>
   )
 }

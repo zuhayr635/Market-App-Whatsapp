@@ -1,10 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Search, User, Menu, Heart, Package, LogOut, ChevronDown, Phone, Mail } from "lucide-react"
+import { Search, User, Menu, Heart, Package, LogOut, ChevronDown, Phone, Mail, ShoppingBag, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import {
   DropdownMenu,
@@ -18,326 +17,225 @@ import { useSession, signOut } from "next-auth/react"
 import { MiniCart } from "@/components/store/mini-cart"
 import { useCurrency } from "@/hooks/use-currency"
 
-export function Header() {
+export function Header({ siteName = "MARKET" }: { siteName?: string }) {
   const { data: session } = useSession()
   const { currency, setCurrency } = useCurrency()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-[var(--market-header-bg)] shadow-sm">
-      {/* Top Bar */}
-      <div className="hidden border-b border-border/50 bg-muted/30 md:block">
-        <div className="mx-auto flex h-8 max-w-7xl items-center justify-between px-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5">
-              <Phone className="size-3" />
-              +90 555 123 4567
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Mail className="size-3" />
-              info@market.com
-            </span>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setCurrency("USD")}
-              className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
-                currency === "USD"
-                  ? "bg-foreground text-background"
-                  : "hover:text-foreground"
-              }`}
-            >
-              USD
-            </button>
-            <span className="text-border">/</span>
-            <button
-              onClick={() => setCurrency("TRY")}
-              className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
-                currency === "TRY"
-                  ? "bg-foreground text-background"
-                  : "hover:text-foreground"
-              }`}
-            >
-              TL
-            </button>
+    <>
+      <header className="sticky top-0 z-40 w-full bg-[var(--market-header-bg)]/95 backdrop-blur-md">
+        {/* Top announcement bar */}
+        <div className="hidden border-b border-[#E7E0D8] bg-[#1C1917] md:block">
+          <div className="mx-auto flex h-9 max-w-7xl items-center justify-between px-6 text-xs text-stone-400">
+            <div className="flex items-center gap-5">
+              <a href="tel:+905551234567" className="flex items-center gap-1.5 transition-colors hover:text-white">
+                <Phone className="size-3" />
+                +90 555 123 4567
+              </a>
+              <a href="mailto:info@market.com" className="flex items-center gap-1.5 transition-colors hover:text-white">
+                <Mail className="size-3" />
+                info@market.com
+              </a>
+            </div>
+            <div className="flex items-center gap-0.5 rounded-full bg-white/10 p-0.5">
+              <button
+                onClick={() => setCurrency("USD")}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                  currency === "USD"
+                    ? "bg-amber-600 text-white"
+                    : "text-stone-400 hover:text-white"
+                }`}
+              >
+                $ USD
+              </button>
+              <button
+                onClick={() => setCurrency("TRY")}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                  currency === "TRY"
+                    ? "bg-amber-600 text-white"
+                    : "text-stone-400 hover:text-white"
+                }`}
+              >
+                ₺ TL
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Header */}
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4 md:h-16">
-        {/* Mobile Menu Button */}
-        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger
-            render={
-              <Button variant="ghost" size="icon" className="md:hidden" />
-            }
-          >
-            <Menu className="size-5" />
-            <span className="sr-only">Menü</span>
-          </SheetTrigger>
+        {/* Main header */}
+        <div className="border-b border-[#E7E0D8]">
+          <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-6 md:h-[72px]">
+            {/* Mobile menu */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger
+                render={<button className="inline-flex items-center justify-center rounded-lg p-2 transition-colors hover:bg-stone-100 md:hidden" />}
+              >
+                <Menu className="size-5 text-stone-700" />
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 border-r-0 bg-[#FEFBF6] p-0">
+                <SheetHeader className="border-b border-[#E7E0D8] px-6 py-5">
+                  <SheetTitle>
+                    <Link href="/" className="font-heading text-2xl font-bold tracking-tight text-stone-900" onClick={() => setMobileMenuOpen(false)}>
+                      {siteName}
+                    </Link>
+                  </SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col p-4">
+                  {[
+                    { href: "/", label: "Ana Sayfa" },
+                    { href: "/urunler", label: "Ürünler" },
+                    { href: "/iletisim", label: "İletişim" },
+                    { href: "/sss", label: "SSS" },
+                  ].map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="rounded-lg px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 hover:text-stone-900"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <div className="my-3 h-px bg-[#E7E0D8]" />
+                  {session?.user ? (
+                    <>
+                      <Link href="/hesabim" className="rounded-lg px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100" onClick={() => setMobileMenuOpen(false)}>
+                        Hesabim
+                      </Link>
+                      <Link href="/siparislerim" className="rounded-lg px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100" onClick={() => setMobileMenuOpen(false)}>
+                        Siparislerim
+                      </Link>
+                      <button onClick={() => { setMobileMenuOpen(false); signOut() }} className="rounded-lg px-4 py-3 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50">
+                        Cikis Yap
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex flex-col gap-2 px-4 pt-2">
+                      <Link href="/giris" onClick={() => setMobileMenuOpen(false)}>
+                        <Button className="w-full bg-amber-700 hover:bg-amber-800 text-white" size="sm">Giris Yap</Button>
+                      </Link>
+                      <Link href="/kayit" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="outline" className="w-full border-[#E7E0D8]" size="sm">Uye Ol</Button>
+                      </Link>
+                    </div>
+                  )}
+                </nav>
+              </SheetContent>
+            </Sheet>
 
-          <SheetContent side="left" className="w-72 p-0">
-            <SheetHeader className="border-b px-4 py-3">
-              <SheetTitle>
+            {/* Logo */}
+            <Link href="/" className="flex-shrink-0">
+              <span className="text-2xl font-bold tracking-tight text-stone-900 md:text-[28px]" style={{ fontFamily: 'var(--font-heading), serif' }}>
+                {siteName}
+              </span>
+            </Link>
+
+            {/* Desktop nav */}
+            <nav className="hidden items-center gap-1 md:flex">
+              {[
+                { href: "/urunler", label: "Ürünler" },
+                { href: "/iletisim", label: "İletişim" },
+                { href: "/sss", label: "SSS" },
+              ].map((item) => (
                 <Link
-                  href="/"
-                  className="text-xl font-bold tracking-tight"
-                  onClick={() => setMobileMenuOpen(false)}
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-lg px-3.5 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900"
                 >
-                  MARKET
+                  {item.label}
                 </Link>
-              </SheetTitle>
-            </SheetHeader>
+              ))}
+            </nav>
 
-            {/* Mobile Search */}
-            <div className="border-b px-4 py-3">
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Search */}
+            <div className="hidden max-w-xs flex-1 md:block">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" />
                 <Input
                   placeholder="Ürün ara..."
-                  className="pl-8"
+                  className="h-10 rounded-xl border-[#E7E0D8] bg-white pl-10 text-sm shadow-sm placeholder:text-stone-400 focus:border-amber-400 focus:ring-amber-400/20"
                 />
               </div>
             </div>
 
-            {/* Mobile Nav Links */}
-            <nav className="flex flex-col px-2 py-2">
-              <Link
-                href="/"
-                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-                onClick={() => setMobileMenuOpen(false)}
+            {/* Actions */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setSearchOpen(!searchOpen)}
+                className="inline-flex items-center justify-center rounded-lg p-2 text-stone-600 transition-colors hover:bg-stone-100 md:hidden"
               >
-                Ana Sayfa
-              </Link>
-              <Link
-                href="/urunler"
-                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Ürünler
-              </Link>
-              <Link
-                href="/kategoriler"
-                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Kategoriler
-              </Link>
-              <Link
-                href="/hakkimizda"
-                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Hakkımızda
-              </Link>
-              <Link
-                href="/iletisim"
-                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                İletişim
-              </Link>
-            </nav>
+                <Search className="size-5" />
+              </button>
 
-            <div className="mx-4 my-2 h-px bg-border" />
-
-            {/* Mobile User Section */}
-            <div className="flex flex-col px-2 py-2">
-              {session?.user ? (
-                <>
-                  <div className="px-3 py-2 text-xs font-medium text-muted-foreground">
-                    {session.user.name || session.user.email}
+              {/* User desktop */}
+              <div className="hidden md:block">
+                {session?.user ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={<button className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900" />}
+                    >
+                      <User className="size-4" />
+                      <span className="max-w-20 truncate">{session.user.name?.split(" ")[0] || "Hesap"}</span>
+                      <ChevronDown className="size-3 opacity-50" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" sideOffset={8}>
+                      <DropdownMenuItem render={<Link href="/hesabim" />}>
+                        <User className="size-4" />
+                        Hesabim
+                      </DropdownMenuItem>
+                      <DropdownMenuItem render={<Link href="/siparislerim" />}>
+                        <Package className="size-4" />
+                        Siparislerim
+                      </DropdownMenuItem>
+                      <DropdownMenuItem render={<Link href="/favorilerim" />}>
+                        <Heart className="size-4" />
+                        Favorilerim
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem variant="destructive" onClick={() => signOut()}>
+                        <LogOut className="size-4" />
+                        Cikis Yap
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Link href="/giris">
+                      <Button variant="ghost" size="sm" className="text-stone-600 hover:text-stone-900">Giris</Button>
+                    </Link>
+                    <Link href="/kayit">
+                      <Button size="sm" className="bg-amber-700 text-white hover:bg-amber-800">Uye Ol</Button>
+                    </Link>
                   </div>
-                  <Link
-                    href="/hesabim"
-                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors hover:bg-muted"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <User className="size-4" />
-                    Hesabım
-                  </Link>
-                  <Link
-                    href="/siparislerim"
-                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors hover:bg-muted"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Package className="size-4" />
-                    Siparişlerim
-                  </Link>
-                  <Link
-                    href="/favorilerim"
-                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors hover:bg-muted"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Heart className="size-4" />
-                    Favorilerim
-                  </Link>
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false)
-                      signOut()
-                    }}
-                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/10"
-                  >
-                    <LogOut className="size-4" />
-                    Çıkış Yap
-                  </button>
-                </>
-              ) : (
-                <div className="flex flex-col gap-2 px-3 py-2">
-                  <Link href="/giris" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full" size="sm">
-                      Giriş Yap
-                    </Button>
-                  </Link>
-                  <Link href="/kayit" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="outline" className="w-full" size="sm">
-                      Üye Ol
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* Mobile Currency */}
-            <div className="mx-4 my-2 h-px bg-border" />
-            <div className="flex items-center gap-2 px-5 py-2 text-xs text-muted-foreground">
-              <span>Para birimi:</span>
-              <button
-                onClick={() => setCurrency("USD")}
-                className={`rounded px-2 py-0.5 font-medium transition-colors ${
-                  currency === "USD"
-                    ? "bg-foreground text-background"
-                    : "hover:text-foreground"
-                }`}
-              >
-                USD
-              </button>
-              <span>/</span>
-              <button
-                onClick={() => setCurrency("TRY")}
-                className={`rounded px-2 py-0.5 font-medium transition-colors ${
-                  currency === "TRY"
-                    ? "bg-foreground text-background"
-                    : "hover:text-foreground"
-                }`}
-              >
-                TL
-              </button>
-            </div>
-          </SheetContent>
-        </Sheet>
-
-        {/* Logo */}
-        <Link
-          href="/"
-          className="flex-shrink-0 text-xl font-extrabold tracking-tight transition-opacity hover:opacity-80 md:text-2xl"
-        >
-          MARKET
-        </Link>
-
-        {/* Desktop Search */}
-        <div className="hidden flex-1 items-center justify-center md:flex">
-          <div className="relative w-full max-w-lg">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Ürün ara..."
-              className="h-9 w-full rounded-lg border-border/60 bg-muted/40 pl-9 pr-4 text-sm transition-colors placeholder:text-muted-foreground/60 focus:bg-background"
-            />
-          </div>
-        </div>
-
-        {/* Right Section */}
-        <div className="ml-auto flex items-center gap-1">
-          {/* Mobile Search Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-          >
-            <Search className="size-5" />
-            <span className="sr-only">Ara</span>
-          </Button>
-
-          {/* Desktop User Menu */}
-          <div className="hidden md:flex md:items-center md:gap-1">
-            {session?.user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={<Button variant="ghost" size="sm" className="gap-1.5" />}
-                >
-                  <User className="size-4" />
-                  <span className="max-w-24 truncate text-sm">
-                    {session.user.name?.split(" ")[0] || "Hesap"}
-                  </span>
-                  <ChevronDown className="size-3 opacity-50" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={8}>
-                  <DropdownMenuItem render={<Link href="/hesabim" />}>
-                    <User className="size-4" />
-                    Hesabım
-                  </DropdownMenuItem>
-                  <DropdownMenuItem render={<Link href="/siparislerim" />}>
-                    <Package className="size-4" />
-                    Siparişlerim
-                  </DropdownMenuItem>
-                  <DropdownMenuItem render={<Link href="/favorilerim" />}>
-                    <Heart className="size-4" />
-                    Favorilerim
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => signOut()}
-                  >
-                    <LogOut className="size-4" />
-                    Çıkış Yap
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link href="/giris">
-                  <Button variant="ghost" size="sm">
-                    Giriş Yap
-                  </Button>
-                </Link>
-                <Link href="/kayit">
-                  <Button size="sm">Üye Ol</Button>
-                </Link>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Favorites - Desktop */}
-          <Link href="/favorilerim" className="hidden md:inline-flex">
-            <Button variant="ghost" size="icon">
-              <Heart className="size-5" />
-              <span className="sr-only">Favoriler</span>
-            </Button>
-          </Link>
+              <Link href="/favorilerim" className="hidden md:inline-flex">
+                <button className="inline-flex items-center justify-center rounded-lg p-2 text-stone-600 transition-colors hover:bg-stone-100 hover:text-amber-700">
+                  <Heart className="size-5" />
+                </button>
+              </Link>
 
-          {/* Cart */}
-          <MiniCart />
-        </div>
-      </div>
-
-      {/* Mobile Expandable Search */}
-      {mobileSearchOpen && (
-        <div className="border-t px-4 py-2 md:hidden">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Ürün ara..."
-              className="pl-9"
-              autoFocus
-            />
+              <MiniCart />
+            </div>
           </div>
         </div>
-      )}
-    </header>
+
+        {/* Mobile search expandable */}
+        {searchOpen && (
+          <div className="border-b border-[#E7E0D8] bg-white px-6 py-3 md:hidden">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" />
+              <Input placeholder="Ürün ara..." className="pl-10 border-[#E7E0D8]" autoFocus />
+            </div>
+          </div>
+        )}
+      </header>
+    </>
   )
 }

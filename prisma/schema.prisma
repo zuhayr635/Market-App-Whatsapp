@@ -5,6 +5,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 // ==================== USER SYSTEM ====================
@@ -638,17 +639,19 @@ model RecentlyViewed {
 // ==================== CMS ====================
 
 model Banner {
-  id        String    @id @default(cuid())
-  title     String?
-  subtitle  String?
-  image     String
+  id         String    @id @default(cuid())
+  title      String?
+  subtitle   String?
+  image      String
+  mediaType  String    @default("image") // image | video
   buttonText String?
   buttonLink String?
+  duration   Int       @default(5) // saniye - otomatik kayma süresi
   startDate  DateTime?
   endDate    DateTime?
-  sortOrder  Int      @default(0)
-  status     Boolean  @default(true)
-  position   String   @default("homepage")
+  sortOrder  Int       @default(0)
+  status     Boolean   @default(true)
+  position   String    @default("homepage")
 
   @@map("banners")
 }

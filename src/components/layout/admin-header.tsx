@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu"
 import { Bell, Menu, User, Settings, ExternalLink, LogOut, CheckCheck } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
@@ -254,7 +255,9 @@ export function AdminHeader() {
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" sideOffset={8}>
-            <DropdownMenuLabel>{adminName}</DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>{adminName}</DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Link href="/admin/ayarlar" className="flex items-center gap-2 w-full">

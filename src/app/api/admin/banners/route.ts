@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { title, subtitle, image, buttonText, buttonLink, startDate, endDate, sortOrder, status, position } = body
+  const { title, subtitle, image, mediaType, buttonText, buttonLink, startDate, endDate, sortOrder, status, position, duration } = body
 
   if (!image) {
     return NextResponse.json({ error: "Görsel URL zorunludur" }, { status: 400 })
@@ -44,6 +44,8 @@ export async function POST(req: NextRequest) {
       sortOrder: sortOrder !== undefined ? Number(sortOrder) : 0,
       status: status !== undefined ? Boolean(status) : true,
       position: position || "homepage",
+      mediaType: mediaType || "image",
+      duration: duration !== undefined ? Number(duration) : 5,
     },
   })
 

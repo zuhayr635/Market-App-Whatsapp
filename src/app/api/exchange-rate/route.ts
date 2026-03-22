@@ -1,29 +1,22 @@
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import { getCached } from "@/lib/cache"
 
 export async function GET() {
-  try {
-    // Try ExchangeRate table first
+  const rate = await getCached("exchangeRate", 300_000, async () => {
     const exchangeRate = await db.exchangeRate.findFirst({
       where: { currency: "TRY" },
       orderBy: { updatedAt: "desc" },
     })
+    if (exchangeRate) return Number(exchangeRate.rate)
 
-    if (exchangeRate) {
-      return NextResponse.json({ rate: Number(exchangeRate.rate) })
-    }
-
-    // Fallback to Setting "usd_rate"
     const setting = await db.setting.findUnique({
       where: { key: "usd_rate" },
     })
+    return setting ? parseFloat(setting.value) : 32.5
+  }).catch(() => 32.5)
 
-    const rate = setting ? parseFloat(setting.value) : 32.5
-
-    return NextResponse.json({ rate })
-  } catch {
-    return NextResponse.json({ rate: 32.5 })
-  }
+  return NextResponse.json({ rate })
 }
 
 export async function POST(request: Request) {

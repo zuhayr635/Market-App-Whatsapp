@@ -97,6 +97,7 @@ export default function AyarlarGenelPage() {
           <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
           <TabsTrigger value="urun">Ürün</TabsTrigger>
           <TabsTrigger value="eposta">E-posta</TabsTrigger>
+          <TabsTrigger value="duyuru">Duyuru</TabsTrigger>
         </TabsList>
 
         {/* Tab 1: Genel */}
@@ -338,6 +339,90 @@ export default function AyarlarGenelPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Tab 5: Duyuru */}
+        <TabsContent value="duyuru">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Duyuru Bandı</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <div>
+                    <p className="font-medium">Duyuru Bandı Aktif</p>
+                    <p className="text-sm text-muted-foreground">Sitenin en üstünde duyuru çubuğunu göster</p>
+                  </div>
+                  <Toggle
+                    checked={getBool("announcement_enabled")}
+                    onChange={(v) => setBool("announcement_enabled", v)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Duyuru Metni</Label>
+                  <Input
+                    value={get("announcement_text")}
+                    onChange={(e) => set("announcement_text", e.target.value)}
+                    placeholder="Ücretsiz kargo kampanyamızdan yararlanın!"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Link (opsiyonel)</Label>
+                  <Input
+                    value={get("announcement_link")}
+                    onChange={(e) => set("announcement_link", e.target.value)}
+                    placeholder="https://..."
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Renk</Label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={get("announcement_color", "#92400e")}
+                      onChange={(e) => set("announcement_color", e.target.value)}
+                      className="h-10 w-16 cursor-pointer rounded border border-input p-1"
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {get("announcement_color", "#92400e")}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    onClick={() =>
+                      saveGroup(["announcement_enabled", "announcement_text", "announcement_link", "announcement_color"])
+                    }
+                    disabled={saving !== null}
+                  >
+                    {saving ? "Kaydediliyor..." : "Kaydet"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Popup Yönetimi</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+                  <p className="font-medium mb-1">Popup bannerlar Banner Yönetimi üzerinden ayarlanır.</p>
+                  <p className="text-blue-700">
+                    Popup olarak göstermek istediğiniz bannerlari <strong>Konum = &quot;popup&quot;</strong> olarak ayarlayın.
+                    Ziyaretçiler oturumda yalnızca bir kez ilk aktif popup bannerı görür.
+                  </p>
+                  <a
+                    href="/admin/bannerlar"
+                    className="mt-3 inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+                  >
+                    Banner Yönetimine Git
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

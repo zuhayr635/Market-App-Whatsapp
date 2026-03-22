@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `banners` ADD COLUMN `duration` INTEGER NOT NULL DEFAULT 5,
+    ADD COLUMN `mediaType` VARCHAR(191) NOT NULL DEFAULT 'image';

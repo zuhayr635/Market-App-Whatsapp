@@ -1,137 +1,81 @@
-import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Twitter } from "lucide-react"
+import { Phone, Mail, MapPin, Clock } from "lucide-react"
 import Link from "next/link"
 
-export function Footer() {
+export function Footer({ siteName = "MARKET" }: { siteName?: string }) {
   return (
-    <footer className="border-t bg-[var(--market-footer-bg)] text-[var(--market-footer-text)]">
-      {/* Main Footer */}
-      <div className="mx-auto max-w-7xl px-4 py-12">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Column 1: Brand */}
-          <div className="space-y-4">
-            <Link href="/" className="inline-block text-2xl font-extrabold tracking-tight text-white">
-              MARKET
+    <footer className="bg-stone-950 text-stone-400">
+      <div className="mx-auto max-w-7xl px-6 pt-16 pb-8">
+        {/* Main grid */}
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Brand */}
+          <div className="space-y-5">
+            <Link href="/" className="inline-block text-2xl font-bold tracking-tight text-white" style={{ fontFamily: 'var(--font-heading), serif' }}>
+              {siteName}
             </Link>
-            <p className="text-sm leading-relaxed opacity-80">
-              Kaliteli ürünler, uygun fiyatlar. WhatsApp üzerinden kolay ve güvenli alışveriş deneyimi.
+            <p className="text-sm leading-relaxed">
+              Kaliteli urunler, uygun fiyatlar. WhatsApp uzerinden kolay ve guvenli alisveris.
             </p>
-            <div className="flex items-center gap-3 pt-2">
-              <a
-                href="#"
-                aria-label="Facebook"
-                className="flex size-9 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20"
-              >
-                <Facebook className="size-4" />
-              </a>
-              <a
-                href="#"
-                aria-label="Instagram"
-                className="flex size-9 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20"
-              >
-                <Instagram className="size-4" />
-              </a>
-              <a
-                href="#"
-                aria-label="Twitter"
-                className="flex size-9 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20"
-              >
-                <Twitter className="size-4" />
-              </a>
-            </div>
           </div>
 
-          {/* Column 2: Quick Links */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
-              Hızlı Linkler
-            </h3>
+          {/* Links */}
+          <div>
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">Magaza</h3>
             <nav className="flex flex-col gap-2.5">
-              <Link href="/" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                Ana Sayfa
-              </Link>
-              <Link href="/urunler" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                Ürünler
-              </Link>
-              <Link href="/kategoriler" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                Kategoriler
-              </Link>
-              <Link href="/hakkimizda" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                Hakkımızda
-              </Link>
-              <Link href="/iletisim" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                İletişim
-              </Link>
+              {[
+                { href: "/", label: "Ana Sayfa" },
+                { href: "/urunler", label: "Urunler" },
+                { href: "/iletisim", label: "Iletisim" },
+                { href: "/sss", label: "SSS" },
+              ].map((item) => (
+                <Link key={item.href} href={item.href} className="text-sm transition-colors hover:text-white">{item.label}</Link>
+              ))}
             </nav>
           </div>
 
-          {/* Column 3: Customer Service */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
-              Müşteri Hizmetleri
-            </h3>
+          {/* Legal */}
+          <div>
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">Yasal</h3>
             <nav className="flex flex-col gap-2.5">
-              <Link href="/sss" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                SSS
-              </Link>
-              <Link href="/kargo-bilgileri" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                Kargo Bilgileri
-              </Link>
-              <Link href="/iade-kosullari" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                İade Koşulları
-              </Link>
-              <Link href="/kvkk" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                KVKK
-              </Link>
-              <Link href="/gizlilik" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                Gizlilik Politikası
-              </Link>
-              <Link href="/kullanim-kosullari" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                Kullanım Koşulları
-              </Link>
+              {[
+                { href: "/kvkk", label: "KVKK" },
+                { href: "/gizlilik", label: "Gizlilik Politikasi" },
+                { href: "/kullanim-kosullari", label: "Kullanim Kosullari" },
+              ].map((item) => (
+                <Link key={item.href} href={item.href} className="text-sm transition-colors hover:text-white">{item.label}</Link>
+              ))}
             </nav>
           </div>
 
-          {/* Column 4: Contact */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
-              İletişim
-            </h3>
+          {/* Contact */}
+          <div>
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">Iletisim</h3>
             <div className="flex flex-col gap-3">
-              <div className="flex items-start gap-2.5">
-                <MapPin className="mt-0.5 size-4 shrink-0 opacity-60" />
-                <span className="text-sm opacity-80">
-                  İstanbul, Türkiye
-                </span>
+              <div className="flex items-start gap-3">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-stone-600" />
+                <span className="text-sm">Istanbul, Turkiye</span>
               </div>
-              <div className="flex items-center gap-2.5">
-                <Phone className="size-4 shrink-0 opacity-60" />
-                <a href="tel:+905551234567" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                  +90 555 123 4567
-                </a>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Mail className="size-4 shrink-0 opacity-60" />
-                <a href="mailto:info@market.com" className="text-sm opacity-80 transition-opacity hover:opacity-100">
-                  info@market.com
-                </a>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <Clock className="mt-0.5 size-4 shrink-0 opacity-60" />
-                <div className="text-sm opacity-80">
-                  <p>Pazartesi - Cumartesi</p>
-                  <p>09:00 - 18:00</p>
+              <a href="tel:+905551234567" className="flex items-center gap-3 text-sm transition-colors hover:text-white">
+                <Phone className="size-4 shrink-0 text-stone-600" />
+                +90 555 123 4567
+              </a>
+              <a href="mailto:info@market.com" className="flex items-center gap-3 text-sm transition-colors hover:text-white">
+                <Mail className="size-4 shrink-0 text-stone-600" />
+                info@market.com
+              </a>
+              <div className="flex items-start gap-3">
+                <Clock className="mt-0.5 size-4 shrink-0 text-stone-600" />
+                <div className="text-sm">
+                  <p>Pzt - Cmt: 09:00 - 18:00</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-4 text-center text-xs opacity-60 sm:flex-row sm:justify-between sm:text-left">
-          <p>&copy; {new Date().getFullYear()} Market. Tüm hakları saklıdır.</p>
-          <p>Ödemeler WhatsApp üzerinden IBAN ile yapılmaktadır.</p>
+        {/* Bottom bar */}
+        <div className="mt-12 flex flex-col items-center gap-3 border-t border-stone-800 pt-8 text-center text-xs text-stone-600 sm:flex-row sm:justify-between">
+          <p>&copy; {new Date().getFullYear()} Market. Tum haklari saklidir.</p>
+          <p>Odemeler havale/EFT ile yapilmaktadir</p>
         </div>
       </div>
     </footer>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
@@ -90,12 +90,22 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
   )
 }
 
+interface Captcha {
+  token: string
+  question: string
+  sig: string
+}
+
 export function RegisterForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [cities, setCities] = useState<City[]>([])
   const [districts, setDistricts] = useState<District[]>([])
   const [loadingDistricts, setLoadingDistricts] = useState(false)
+  const [captcha, setCaptcha] = useState<Captcha | null>(null)
+  const [captchaAnswer, setCaptchaAnswer] = useState("")
+  const [captchaError, setCaptchaError] = useState("")
+  const honeypotRef = useRef<HTMLInputElement>(null)
 
   const {
     register,
@@ -114,12 +124,23 @@ export function RegisterForm() {
   const watchCityId = watch("cityId", "")
   const watchKvkk = watch("kvkkConsent")
 
+  const fetchCaptcha = useCallback(async () => {
+    const res = await fetch("/api/captcha")
+    if (res.ok) {
+      const data = await res.json()
+      setCaptcha(data)
+      setCaptchaAnswer("")
+      setCaptchaError("")
+    }
+  }, [])
+
   useEffect(() => {
     fetch("/api/cities")
       .then((res) => res.json())
       .then((data) => setCities(data))
       .catch(() => toast.error("Sehirler yuklenirken hata olustu"))
-  }, [])
+    fetchCaptcha()
+  }, [fetchCaptcha])
 
   const fetchDistricts = useCallback((cityId: string) => {
     if (!cityId) {
@@ -144,12 +165,26 @@ export function RegisterForm() {
   }, [watchCityId, fetchDistricts, setValue])
 
   const onSubmit = async (data: RegisterInput) => {
+    if (!captcha) {
+      toast.error("CAPTCHA yüklenemedi, sayfayı yenileyin")
+      return
+    }
+    if (!captchaAnswer.trim()) {
+      setCaptchaError("Lütfen güvenlik sorusunu cevaplayın")
+      return
+    }
     setIsLoading(true)
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          _hp: honeypotRef.current?.value ?? "",
+          captchaToken: captcha.token,
+          captchaAnswer,
+          captchaSig: captcha.sig,
+        }),
       })
 
       const result = await res.json()
@@ -157,6 +192,9 @@ export function RegisterForm() {
       if (!res.ok) {
         if (res.status === 409) {
           toast.error("Bu e-posta adresi zaten kayitli.")
+        } else if (result.message?.includes("CAPTCHA")) {
+          setCaptchaError("Güvenlik kodu hatalı, lütfen tekrar deneyin")
+          fetchCaptcha()
         } else if (result.errors) {
           const firstError = Object.values(result.errors)[0]
           toast.error(Array.isArray(firstError) ? firstError[0] as string : "Gecersiz bilgiler.")
@@ -379,6 +417,48 @@ export function RegisterForm() {
             {errors.securityAnswer && (
               <p className="text-sm text-destructive">{errors.securityAnswer.message}</p>
             )}
+          </div>
+
+          {/* Honeypot — botlar doldurur, insanlar görmez */}
+          <input
+            ref={honeypotRef}
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0 }}
+          />
+
+          {/* CAPTCHA */}
+          <div className="space-y-2">
+            <Label>Güvenlik Doğrulaması</Label>
+            <div className="flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3">
+              {captcha ? (
+                <>
+                  <span className="font-mono text-base font-semibold text-foreground select-none">
+                    {captcha.question}
+                  </span>
+                  <Input
+                    type="number"
+                    placeholder="Cevap"
+                    value={captchaAnswer}
+                    onChange={(e) => { setCaptchaAnswer(e.target.value); setCaptchaError("") }}
+                    className="h-9 w-24 text-center font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={fetchCaptcha}
+                    className="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+                  >
+                    Yenile
+                  </button>
+                </>
+              ) : (
+                <span className="text-sm text-muted-foreground">Yükleniyor...</span>
+              )}
+            </div>
+            {captchaError && <p className="text-sm text-destructive">{captchaError}</p>}
           </div>
 
           {/* KVKK Consent */}

@@ -1,7 +1,10 @@
 import { db } from '@/lib/db'
+import { getCached } from '@/lib/cache'
 
-export async function getSiteSettings() {
-  try {
+const defaults = { siteName: 'Market', siteDescription: 'Online alışveriş platformu', siteLogo: '' }
+
+export function getSiteSettings() {
+  return getCached('siteSettings', 60_000, async () => {
     const settings = await db.setting.findMany({
       where: { key: { in: ['site_name', 'site_description', 'site_logo'] } }
     })
@@ -11,9 +14,7 @@ export async function getSiteSettings() {
       siteDescription: map.site_description || 'Online alışveriş platformu',
       siteLogo: map.site_logo || '',
     }
-  } catch {
-    return { siteName: 'Market', siteDescription: 'Online alışveriş platformu', siteLogo: '' }
-  }
+  }).catch(() => defaults)
 }
 
 export function buildMetadata({

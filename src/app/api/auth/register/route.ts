@@ -2,10 +2,25 @@ import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { registerSchema } from "@/lib/validations/auth"
+import { verifyCaptcha } from "@/app/api/captcha/route"
 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
+
+    // Honeypot kontrolü — botlar bu alanı doldurur
+    if (body._hp && body._hp.trim() !== "") {
+      return NextResponse.json({ message: "Gecersiz istek" }, { status: 400 })
+    }
+
+    // CAPTCHA doğrulama
+    const { captchaToken, captchaAnswer, captchaSig } = body
+    if (!captchaToken || !captchaAnswer || !captchaSig) {
+      return NextResponse.json({ message: "CAPTCHA gerekli" }, { status: 400 })
+    }
+    if (!verifyCaptcha(captchaToken, captchaAnswer, captchaSig)) {
+      return NextResponse.json({ message: "CAPTCHA yanlis veya suresi dolmus" }, { status: 400 })
+    }
 
     const parsed = registerSchema.safeParse(body)
     if (!parsed.success) {

@@ -115,10 +115,10 @@ export function LoginForm() {
               </Label>
             </div>
             <Link
-              href="/sifre-sifirla"
+              href="/sifremi-unuttum"
               className="text-sm text-primary hover:underline"
             >
-              Sifremi Unuttum
+              Şifremi Unuttum?
             </Link>
           </div>
 
