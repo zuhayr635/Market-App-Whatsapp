@@ -16,10 +16,11 @@ import {
 import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
 import { MiniCart } from "@/components/store/mini-cart"
+import { useCurrency } from "@/hooks/use-currency"
 
 export function Header() {
   const { data: session } = useSession()
-  const [currency, setCurrency] = useState<"USD" | "TL">("USD")
+  const { currency, setCurrency } = useCurrency()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
 
@@ -51,9 +52,9 @@ export function Header() {
             </button>
             <span className="text-border">/</span>
             <button
-              onClick={() => setCurrency("TL")}
+              onClick={() => setCurrency("TRY")}
               className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
-                currency === "TL"
+                currency === "TRY"
                   ? "bg-foreground text-background"
                   : "hover:text-foreground"
               }`}
@@ -216,9 +217,9 @@ export function Header() {
               </button>
               <span>/</span>
               <button
-                onClick={() => setCurrency("TL")}
+                onClick={() => setCurrency("TRY")}
                 className={`rounded px-2 py-0.5 font-medium transition-colors ${
-                  currency === "TL"
+                  currency === "TRY"
                     ? "bg-foreground text-background"
                     : "hover:text-foreground"
                 }`}

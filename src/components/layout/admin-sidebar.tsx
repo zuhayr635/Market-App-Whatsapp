@@ -17,6 +17,7 @@ import {
   BarChart3,
   PanelLeftClose,
   PanelLeftOpen,
+  TrendingUp,
 } from "lucide-react"
 import { useState } from "react"
 
@@ -30,6 +31,7 @@ const menuItems = [
   { label: "Sayfalar", icon: FileText, href: "/admin/sayfalar" },
   { type: "separator" as const },
   { label: "Ayarlar", icon: Settings, href: "/admin/ayarlar" },
+  { label: "Döviz Kuru", icon: TrendingUp, href: "/admin/ayarlar/doviz" },
   { label: "Tema", icon: Palette, href: "/admin/tema" },
   { label: "Raporlar", icon: BarChart3, href: "/admin/raporlar" },
 ] as const
