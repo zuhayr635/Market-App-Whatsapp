@@ -37,6 +37,11 @@ export default function CartPage() {
   const [selectedAddressId, setSelectedAddressId] = useState("")
   const [orderNote, setOrderNote] = useState("")
   const [sending, setSending] = useState(false)
+  const [couponCode, setCouponCode] = useState('')
+  const [couponDiscount, setCouponDiscount] = useState(0)
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; type: string; value: number } | null>(null)
+  const [couponError, setCouponError] = useState('')
+  const [couponLoading, setCouponLoading] = useState(false)
 
   const loadCart = useCallback(async () => {
     try {
@@ -114,6 +119,43 @@ export default function CartPage() {
     }
   }
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return
+    setCouponError('')
+    setCouponLoading(true)
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: couponCode.trim(),
+          orderAmount: cart ? cart.totalTl : 0,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setCouponError(data.error || 'Geçersiz kupon')
+        setAppliedCoupon(null)
+        setCouponDiscount(0)
+        return
+      }
+      setAppliedCoupon(data.coupon)
+      setCouponDiscount(data.coupon.discount)
+      toast.success(`Kupon uygulandı! ${data.coupon.discount} TL indirim kazandınız.`)
+    } catch {
+      setCouponError('Kupon doğrulanamadı')
+    } finally {
+      setCouponLoading(false)
+    }
+  }
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null)
+    setCouponDiscount(0)
+    setCouponCode('')
+    setCouponError('')
+  }
+
   const handleWhatsAppOrder = async () => {
     if (!cart || cart.items.length === 0) return
     setSending(true)
@@ -130,6 +172,8 @@ export default function CartPage() {
           addressId: selectedAddressId || undefined,
           orderNote: orderNote || undefined,
           addressText,
+          couponCode: appliedCoupon?.code || undefined,
+          discountAmount: couponDiscount || undefined,
         }),
       })
 
@@ -287,16 +331,60 @@ export default function CartPage() {
                 <span className="text-muted-foreground">Ara Toplam (TL)</span>
                 <span className="font-medium">{formatPrice(cart.totalTl, "TL")}</span>
               </div>
+              {couponDiscount > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Kupon İndirimi ({appliedCoupon?.code})</span>
+                  <span className="font-medium">-{formatPrice(couponDiscount, "TL")}</span>
+                </div>
+              )}
               <div className="my-2 h-px bg-border" />
               <div className="flex justify-between text-base font-bold">
                 <span>Toplam</span>
                 <div className="text-right">
                   <div>{formatPrice(cart.totalUsd)}</div>
                   <div className="text-sm text-muted-foreground">
-                    {formatPrice(cart.totalTl, "TL")}
+                    {formatPrice(Math.max(0, cart.totalTl - couponDiscount), "TL")}
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Coupon Input */}
+            <div className="mt-4 border-t pt-4">
+              <h3 className="mb-2 text-sm font-semibold">Kupon Kodu</h3>
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between rounded-lg bg-green-50 px-3 py-2 text-sm">
+                  <span className="font-mono font-semibold text-green-700">{appliedCoupon.code}</span>
+                  <button
+                    onClick={handleRemoveCoupon}
+                    className="text-xs text-red-500 hover:text-red-700"
+                  >
+                    Kaldır
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError('') }}
+                      placeholder="Kupon kodunu girin"
+                      className="flex-1 rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading || !couponCode.trim()}
+                      className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {couponLoading ? '...' : 'Uygula'}
+                    </button>
+                  </div>
+                  {couponError && (
+                    <p className="mt-1 text-xs text-red-500">{couponError}</p>
+                  )}
+                </>
+              )}
             </div>
           </div>
 

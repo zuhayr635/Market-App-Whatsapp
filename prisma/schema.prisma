@@ -221,6 +221,7 @@ model Product {
   favorites       Favorite[]
   cartItems       CartItem[]
   recentlyViewed  RecentlyViewed[]
+  stockAlerts     StockAlert[]
 
   @@map("products")
 }
@@ -472,6 +473,9 @@ model Order {
   adminNote   String?     @db.Text
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+
+  couponCode      String?
+  discountAmount  Decimal?    @db.Decimal(10, 2)
 
   user         User           @relation(fields: [userId], references: [id])
   items        OrderItem[]
@@ -733,4 +737,43 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@map("notifications")
+}
+
+// ==================== COUPON ====================
+
+model Coupon {
+  id              String      @id @default(cuid())
+  code            String      @unique
+  type            CouponType  @default(PERCENTAGE)
+  value           Decimal     @db.Decimal(10, 2)
+  minOrderAmount  Decimal?    @db.Decimal(10, 2)
+  maxUsageCount   Int?
+  usedCount       Int         @default(0)
+  isActive        Boolean     @default(true)
+  expiresAt       DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("coupons")
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
+
+// ==================== STOCK ALERT ====================
+
+model StockAlert {
+  id         String   @id @default(cuid())
+  productId  String
+  userId     String?
+  email      String
+  isNotified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, email])
+  @@map("stock_alerts")
 }

@@ -18,6 +18,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   TrendingUp,
+  Tag,
+  Bell,
+  MessageSquare,
 } from "lucide-react"
 import { useState } from "react"
 
@@ -27,11 +30,14 @@ const menuItems = [
   { label: "Kategoriler", icon: FolderTree, href: "/admin/kategoriler" },
   { label: "Siparişler", icon: ShoppingCart, href: "/admin/siparisler" },
   { label: "Kullanıcılar", icon: Users, href: "/admin/kullanicilar" },
+  { label: "Kuponlar", icon: Tag, href: "/admin/kuponlar" },
+  { label: "Stok Uyarıları", icon: Bell, href: "/admin/stok-uyarilari" },
   { label: "Bannerlar", icon: Image, href: "/admin/bannerlar" },
   { label: "Sayfalar", icon: FileText, href: "/admin/sayfalar" },
   { type: "separator" as const },
   { label: "Ayarlar", icon: Settings, href: "/admin/ayarlar/genel" },
   { label: "Döviz Kuru", icon: TrendingUp, href: "/admin/ayarlar/doviz" },
+  { label: "SMS Ayarları", icon: MessageSquare, href: "/admin/ayarlar/sms" },
   { label: "Tema", icon: Palette, href: "/admin/tema" },
   { label: "Raporlar", icon: BarChart3, href: "/admin/raporlar" },
 ] as const

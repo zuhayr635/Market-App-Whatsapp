@@ -18,6 +18,7 @@ import { ImageGallery } from "@/components/store/image-gallery"
 import { VariationSelector } from "@/components/store/variation-selector"
 import { QuantitySelector } from "@/components/store/quantity-selector"
 import { AddToCartButton } from "@/components/store/add-to-cart-button"
+import { StockAlertForm } from "@/components/stock-alert-form"
 import { toast } from "sonner"
 
 interface ProductImage {
@@ -395,6 +396,10 @@ export function ProductDetailClient({
               variationId={selectedVariation?.id}
               quantity={quantity}
             />
+
+            {outOfStock && (
+              <StockAlertForm productId={product.id} />
+            )}
           </div>
 
           {/* Favorite + WhatsApp + Share */}
