@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { ProductStatus, Prisma } from "@/generated/prisma"
 import { generateSlug } from "@/lib/utils/slug"
+import { productSchema } from "@/lib/validations/product"
 
 export async function GET(request: NextRequest) {
   try {
@@ -96,27 +97,30 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, sku, categoryId, priceUsd, priceTl, stockQty, shortDesc, status } = body
+    const parsed = productSchema.safeParse(body)
 
-    if (!name || !priceUsd || !priceTl) {
+    if (!parsed.success) {
+      const errors = parsed.error.issues.map((i) => i.message)
       return NextResponse.json(
-        { error: "Ürün adı, USD fiyat ve TL fiyat zorunludur" },
+        { error: errors.join(", "), issues: parsed.error.issues },
         { status: 400 }
       )
     }
 
+    const data = parsed.data
+
     // Generate slug, ensure unique
-    let slug = generateSlug(name)
+    let slug = data.slug && data.slug.trim() ? data.slug.trim() : generateSlug(data.name)
     const existingSlug = await db.product.findUnique({ where: { slug } })
     if (existingSlug) {
       slug = `${slug}-${Date.now()}`
     }
 
     // Auto-generate SKU if not provided
-    const finalSku = sku && sku.trim() ? sku.trim() : `PRD-${Date.now()}`
+    const sku = data.sku && data.sku.trim() ? data.sku.trim() : `PRD-${Date.now()}`
 
     // Check SKU uniqueness
-    const existingSku = await db.product.findUnique({ where: { sku: finalSku } })
+    const existingSku = await db.product.findUnique({ where: { sku } })
     if (existingSku) {
       return NextResponse.json(
         { error: "Bu SKU zaten kullanılıyor" },
@@ -124,26 +128,57 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate status
-    const productStatus =
-      status && Object.values(ProductStatus).includes(status as ProductStatus)
-        ? (status as ProductStatus)
-        : ProductStatus.DRAFT
+    // Auto-calculate TL price if not provided (default 1:1 ratio, will be replaced by exchange rate later)
+    const priceTl = data.priceTl ?? data.priceUsd
 
     const product = await db.product.create({
       data: {
-        name,
+        name: data.name,
         slug,
-        sku: finalSku,
-        priceUsd: new Prisma.Decimal(priceUsd),
+        sku,
+        shortDesc: data.shortDesc || null,
+        fullDesc: data.fullDesc || null,
+        barcode: data.barcode || null,
+        brandId: data.brandId || null,
+        manufacturer: data.manufacturer || null,
+        originCountry: data.originCountry || null,
+        priceUsd: new Prisma.Decimal(data.priceUsd),
         priceTl: new Prisma.Decimal(priceTl),
-        stockQty: stockQty ? parseInt(stockQty) : 0,
-        shortDesc: shortDesc || null,
-        status: productStatus,
-        ...(categoryId
+        salePriceUsd: data.salePriceUsd != null ? new Prisma.Decimal(data.salePriceUsd) : null,
+        salePriceTl: data.salePriceTl != null ? new Prisma.Decimal(data.salePriceTl) : null,
+        saleStart: data.saleStart ? new Date(data.saleStart) : null,
+        saleEnd: data.saleEnd ? new Date(data.saleEnd) : null,
+        vatRate: data.vatRate ?? 18,
+        vatIncluded: data.vatIncluded ?? true,
+        stockTracking: data.stockTracking ?? true,
+        stockQty: data.stockQty ?? 0,
+        lowStockThreshold: data.lowStockThreshold ?? 5,
+        weight: data.weight != null ? new Prisma.Decimal(data.weight) : null,
+        width: data.width != null ? new Prisma.Decimal(data.width) : null,
+        height: data.height != null ? new Prisma.Decimal(data.height) : null,
+        depth: data.depth != null ? new Prisma.Decimal(data.depth) : null,
+        isFeatured: data.isFeatured ?? false,
+        isNew: data.isNew ?? false,
+        isBestSeller: data.isBestSeller ?? false,
+        seoTitle: data.seoTitle || null,
+        seoDesc: data.seoDesc || null,
+        status: (data.status as ProductStatus) || ProductStatus.DRAFT,
+        visibility: data.visibility || "PUBLIC",
+        publishAt: data.publishAt ? new Date(data.publishAt) : null,
+        sortOrder: data.sortOrder ?? 0,
+        // Create category relations
+        ...(data.categoryIds && data.categoryIds.length > 0
           ? {
               categories: {
-                create: { categoryId },
+                create: data.categoryIds.map((categoryId) => ({ categoryId })),
+              },
+            }
+          : {}),
+        // Create tag relations
+        ...(data.tagIds && data.tagIds.length > 0
+          ? {
+              tags: {
+                create: data.tagIds.map((tagId) => ({ tagId })),
               },
             }
           : {}),
@@ -152,6 +187,11 @@ export async function POST(request: NextRequest) {
         categories: {
           include: {
             category: { select: { id: true, name: true } },
+          },
+        },
+        tags: {
+          include: {
+            tag: { select: { id: true, name: true } },
           },
         },
       },
