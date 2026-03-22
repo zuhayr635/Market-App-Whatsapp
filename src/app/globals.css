@@ -83,6 +83,15 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+
+    /* Market theme */
+    --market-primary: #2563eb;
+    --market-secondary: #64748b;
+    --market-accent: #f59e0b;
+    --market-whatsapp: #25D366;
+    --market-header-bg: #ffffff;
+    --market-footer-bg: #1e293b;
+    --market-footer-text: #e2e8f0;
 }
 
 .dark {
