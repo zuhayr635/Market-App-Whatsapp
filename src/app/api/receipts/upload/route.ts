@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { writeFile, mkdir } from "fs/promises"
 import path from "path"
+import { createNotification } from "@/lib/notify"
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -63,6 +64,14 @@ export async function POST(req: NextRequest) {
       description: "Ödeme dekontu yüklendi - onay bekleniyor",
     },
   })
+
+  // Create admin notification
+  await createNotification(
+    "new_receipt",
+    "Dekont Yüklendi",
+    `${order.orderNo} numaralı sipariş için ödeme dekontu yüklendi`,
+    `/admin/siparisler/${orderId}`
+  )
 
   return NextResponse.json({ success: true, receipt })
 }

@@ -1,7 +1,8 @@
 "use client"
 
+import { useEffect, useState, useCallback } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -12,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
-import { Bell, Menu, User, Settings, ExternalLink, LogOut } from "lucide-react"
+import { Bell, Menu, User, Settings, ExternalLink, LogOut, CheckCheck } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import Link from "next/link"
 import {
@@ -28,6 +29,16 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+interface Notification {
+  id: string
+  type: string
+  title: string
+  message: string
+  link: string | null
+  isRead: boolean
+  createdAt: string
+}
+
 const pageTitles: Record<string, string> = {
   "/admin": "Dashboard",
   "/admin/urunler": "Ürünler",
@@ -39,6 +50,7 @@ const pageTitles: Record<string, string> = {
   "/admin/ayarlar": "Ayarlar",
   "/admin/tema": "Tema",
   "/admin/raporlar": "Raporlar",
+  "/admin/iletisim": "İletişim",
 }
 
 const mobileMenuItems = [
@@ -57,12 +69,60 @@ const mobileMenuItems = [
 export function AdminHeader() {
   const { data: session } = useSession()
   const pathname = usePathname()
+  const router = useRouter()
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [notifOpen, setNotifOpen] = useState(false)
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/notifications")
+      if (res.ok) {
+        const data = await res.json()
+        setNotifications(data.notifications || [])
+        setUnreadCount(data.unreadCount || 0)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchNotifications()
+    const interval = setInterval(fetchNotifications, 60000)
+    return () => clearInterval(interval)
+  }, [fetchNotifications])
+
+  async function markAsRead(id: string, link: string | null) {
+    try {
+      await fetch(`/api/admin/notifications?markRead=${id}`)
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+      )
+      setUnreadCount((prev) => Math.max(0, prev - 1))
+    } catch {
+      // ignore
+    }
+    if (link) {
+      setNotifOpen(false)
+      router.push(link)
+    }
+  }
+
+  async function clearRead() {
+    try {
+      await fetch("/api/admin/notifications", { method: "DELETE" })
+      setNotifications((prev) => prev.filter((n) => !n.isRead))
+    } catch {
+      // ignore
+    }
+  }
 
   const pageTitle = pageTitles[pathname] || "Admin Paneli"
   const adminName = session?.user?.name || "Admin"
   const initials = adminName
     .split(" ")
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2)
@@ -123,13 +183,63 @@ export function AdminHeader() {
       {/* Right side */}
       <div className="flex items-center gap-2">
         {/* Notification bell */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-            0
-          </span>
-          <span className="sr-only">Bildirimler</span>
-        </Button>
+        <DropdownMenu open={notifOpen} onOpenChange={setNotifOpen}>
+          <DropdownMenuTrigger className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg hover:bg-muted">
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+            <span className="sr-only">Bildirimler</span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" sideOffset={8} className="w-80">
+            <div className="flex items-center justify-between px-3 py-2">
+              <span className="font-semibold text-sm">Bildirimler</span>
+              {notifications.some((n) => n.isRead) && (
+                <button
+                  onClick={clearRead}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <CheckCheck className="h-3 w-3" />
+                  Tümünü Temizle
+                </button>
+              )}
+            </div>
+            <DropdownMenuSeparator />
+            {notifications.length === 0 ? (
+              <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                Bildirim yok
+              </div>
+            ) : (
+              <div className="max-h-80 overflow-y-auto">
+                {notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    onClick={() => markAsRead(n.id, n.link)}
+                    className={cn(
+                      "flex cursor-pointer flex-col gap-0.5 px-3 py-2.5 hover:bg-muted transition-colors",
+                      !n.isRead && "bg-blue-50"
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      {!n.isRead && (
+                        <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
+                      )}
+                      <span className={cn("text-sm font-medium", !n.isRead ? "" : "text-muted-foreground ml-4")}>
+                        {n.title}
+                      </span>
+                    </div>
+                    <p className="ml-4 text-xs text-muted-foreground line-clamp-2">{n.message}</p>
+                    <p className="ml-4 text-[10px] text-muted-foreground">
+                      {new Date(n.createdAt).toLocaleString("tr-TR")}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* User dropdown */}
         <DropdownMenu>

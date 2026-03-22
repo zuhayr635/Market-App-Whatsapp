@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { buildWhatsAppMessage, type CartItem } from "@/lib/cart"
+import { createNotification } from "@/lib/notify"
 
 function generateOrderNo(): string {
   const now = new Date()
@@ -145,6 +146,14 @@ export async function POST(req: NextRequest) {
 
   // Clear cart
   await db.cartItem.deleteMany({ where: { cartId: cart.id } })
+
+  // Create admin notification
+  await createNotification(
+    "new_order",
+    "Yeni Sipariş",
+    `${orderNo} numaralı yeni sipariş oluşturuldu`,
+    `/admin/siparisler/${order.id}`
+  )
 
   // Build WhatsApp message
   const message = buildWhatsAppMessage(

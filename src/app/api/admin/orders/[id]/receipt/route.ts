@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { sendEmailFromTemplate } from "@/lib/email"
 
 export async function POST(
   req: NextRequest,
@@ -52,6 +53,23 @@ export async function POST(
       )
     )
 
+    // Notify user via email
+    try {
+      const fullOrder = await db.order.findUnique({
+        where: { id: params.id },
+        include: { user: { select: { email: true, name: true, surname: true } } },
+      })
+      if (fullOrder?.user?.email) {
+        await sendEmailFromTemplate("dekont_onaylandi", fullOrder.user.email, {
+          ad_soyad: `${fullOrder.user.name || ""} ${fullOrder.user.surname || ""}`.trim(),
+          siparis_no: fullOrder.orderNo,
+          siparis_linki: `${process.env.NEXTAUTH_URL || ""}/siparislerim`,
+        })
+      }
+    } catch {
+      // email failure should not block the response
+    }
+
     return NextResponse.json({ success: true })
   }
 
@@ -75,6 +93,24 @@ export async function POST(
         description: `Dekont reddedildi: ${rejectReason || "Geçersiz dekont"}`,
       },
     })
+    // Notify user via email for rejection
+    try {
+      const fullOrder = await db.order.findUnique({
+        where: { id: params.id },
+        include: { user: { select: { email: true, name: true, surname: true } } },
+      })
+      if (fullOrder?.user?.email) {
+        await sendEmailFromTemplate("dekont_reddedildi", fullOrder.user.email, {
+          ad_soyad: `${fullOrder.user.name || ""} ${fullOrder.user.surname || ""}`.trim(),
+          siparis_no: fullOrder.orderNo,
+          red_sebebi: rejectReason || "Geçersiz dekont",
+          siparis_linki: `${process.env.NEXTAUTH_URL || ""}/siparislerim`,
+        })
+      }
+    } catch {
+      // email failure should not block the response
+    }
+
     return NextResponse.json({ success: true })
   }
 
