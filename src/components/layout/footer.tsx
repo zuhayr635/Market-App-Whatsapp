@@ -1,81 +1,126 @@
-import { Phone, Mail, MapPin, Clock } from "lucide-react"
+"use client"
+
+import { Phone, Mail, MapPin, Clock, MessageCircle } from "lucide-react"
 import Link from "next/link"
 
 export function Footer({ siteName = "MARKET" }: { siteName?: string }) {
   return (
-    <footer className="bg-stone-950 text-stone-400">
+    <footer style={{ backgroundColor: '#060709', borderTop: '1px solid rgba(255,102,0,0.1)' }}>
       <div className="mx-auto max-w-7xl px-6 pt-16 pb-8">
         {/* Main grid */}
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="space-y-5">
-            <Link href="/" className="inline-block text-2xl font-bold tracking-tight text-white" style={{ fontFamily: 'var(--font-heading), serif' }}>
-              {siteName}
+            <Link href="/" className="inline-block">
+              <span className="text-3xl font-bold tracking-[0.08em]" style={{ color: 'var(--market-primary)' }}>
+                {siteName}
+              </span>
             </Link>
-            <p className="text-sm leading-relaxed">
-              Kaliteli urunler, uygun fiyatlar. WhatsApp uzerinden kolay ve guvenli alisveris.
+            <p className="text-sm leading-relaxed" style={{ color: '#4A4640' }}>
+              Kaliteli ürünler, uygun fiyatlar. WhatsApp üzerinden kolay ve güvenli alışveriş.
             </p>
+            <a
+              href="https://wa.me/905551234567"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-90"
+              style={{ backgroundColor: '#1A2E1F', color: '#25D366', border: '1px solid rgba(37,211,102,0.2)' }}
+            >
+              <MessageCircle className="size-4" />
+              WhatsApp ile Ulaşın
+            </a>
           </div>
 
           {/* Links */}
           <div>
-            <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">Magaza</h3>
-            <nav className="flex flex-col gap-2.5">
+            <h3 className="mb-5 text-xs font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--market-primary)' }}>
+              Mağaza
+            </h3>
+            <nav className="flex flex-col gap-3">
               {[
                 { href: "/", label: "Ana Sayfa" },
-                { href: "/urunler", label: "Urunler" },
-                { href: "/iletisim", label: "Iletisim" },
-                { href: "/sss", label: "SSS" },
+                { href: "/urunler", label: "Ürünler" },
+                { href: "/iletisim", label: "İletişim" },
               ].map((item) => (
-                <Link key={item.href} href={item.href} className="text-sm transition-colors hover:text-white">{item.label}</Link>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="text-sm font-bold transition-colors"
+                  style={{ color: '#4A4640' }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.color = 'var(--market-primary)')}
+                  onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.color = '#4A4640')}
+                >
+                  {item.label}
+                </Link>
               ))}
             </nav>
           </div>
 
           {/* Legal */}
           <div>
-            <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">Yasal</h3>
-            <nav className="flex flex-col gap-2.5">
+            <h3 className="mb-5 text-xs font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--market-primary)' }}>
+              Yasal
+            </h3>
+            <nav className="flex flex-col gap-3">
               {[
                 { href: "/kvkk", label: "KVKK" },
-                { href: "/gizlilik", label: "Gizlilik Politikasi" },
-                { href: "/kullanim-kosullari", label: "Kullanim Kosullari" },
+                { href: "/gizlilik", label: "Gizlilik Politikası" },
+                { href: "/kullanim-kosullari", label: "Kullanım Koşulları" },
+                { href: "/iade-kosullari", label: "İade Koşulları" },
               ].map((item) => (
-                <Link key={item.href} href={item.href} className="text-sm transition-colors hover:text-white">{item.label}</Link>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="text-sm transition-colors"
+                  style={{ color: '#4A4640' }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.color = 'var(--market-primary)')}
+                  onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.color = '#4A4640')}
+                >
+                  {item.label}
+                </Link>
               ))}
             </nav>
           </div>
 
           {/* Contact */}
           <div>
-            <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">Iletisim</h3>
-            <div className="flex flex-col gap-3">
+            <h3 className="mb-5 text-xs font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--market-primary)' }}>
+              İletişim
+            </h3>
+            <div className="flex flex-col gap-3.5">
               <div className="flex items-start gap-3">
-                <MapPin className="mt-0.5 size-4 shrink-0 text-stone-600" />
-                <span className="text-sm">Istanbul, Turkiye</span>
+                <MapPin className="mt-0.5 size-4 shrink-0" style={{ color: '#4A4640' }} />
+                <span className="text-sm" style={{ color: '#4A4640' }}>İstanbul, Türkiye</span>
               </div>
-              <a href="tel:+905551234567" className="flex items-center gap-3 text-sm transition-colors hover:text-white">
-                <Phone className="size-4 shrink-0 text-stone-600" />
+              <a href="tel:+905551234567" className="flex items-center gap-3 text-sm transition-colors" style={{ color: '#4A4640' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--market-primary)')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#4A4640')}
+              >
+                <Phone className="size-4 shrink-0" style={{ color: '#4A4640' }} />
                 +90 555 123 4567
               </a>
-              <a href="mailto:info@market.com" className="flex items-center gap-3 text-sm transition-colors hover:text-white">
-                <Mail className="size-4 shrink-0 text-stone-600" />
+              <a href="mailto:info@market.com" className="flex items-center gap-3 text-sm transition-colors" style={{ color: '#4A4640' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--market-primary)')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#4A4640')}
+              >
+                <Mail className="size-4 shrink-0" style={{ color: '#4A4640' }} />
                 info@market.com
               </a>
               <div className="flex items-start gap-3">
-                <Clock className="mt-0.5 size-4 shrink-0 text-stone-600" />
-                <div className="text-sm">
-                  <p>Pzt - Cmt: 09:00 - 18:00</p>
-                </div>
+                <Clock className="mt-0.5 size-4 shrink-0" style={{ color: '#4A4640' }} />
+                <p className="text-sm" style={{ color: '#4A4640' }}>Pzt – Cmt: 09:00 – 18:00</p>
               </div>
             </div>
           </div>
         </div>
 
+        {/* Divider */}
+        <div className="mt-14 h-px" style={{ backgroundColor: 'rgba(255,102,0,0.08)' }} />
+
         {/* Bottom bar */}
-        <div className="mt-12 flex flex-col items-center gap-3 border-t border-stone-800 pt-8 text-center text-xs text-stone-600 sm:flex-row sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} Market. Tum haklari saklidir.</p>
-          <p>Odemeler havale/EFT ile yapilmaktadir</p>
+        <div className="mt-8 flex flex-col items-center gap-3 text-center text-xs sm:flex-row sm:justify-between">
+          <p style={{ color: '#2A2620' }}>© {new Date().getFullYear()} {siteName}. Tüm hakları saklıdır.</p>
+          <p style={{ color: '#2A2620' }}>Ödemeler havale/EFT ile yapılmaktadır</p>
         </div>
       </div>
     </footer>

@@ -1,4 +1,6 @@
-const cache = new Map<string, { data: unknown; expiry: number }>()
+const g = globalThis as unknown as { __appCache?: Map<string, { data: unknown; expiry: number }> }
+if (!g.__appCache) g.__appCache = new Map()
+const cache = g.__appCache
 
 export function clearCache(key: string) {
   cache.delete(key)

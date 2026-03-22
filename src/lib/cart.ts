@@ -86,6 +86,7 @@ export function buildWhatsAppMessage(
   address?: string,
   orderNote?: string,
   orderNo?: string,
+  coupon?: { code: string; discount: number },
 ): string {
   let msg = `🛒 *Yeni Sipariş*${orderNo ? ` - ${orderNo}` : ""}\n\n`
   msg += `📦 *Ürünler:*\n`
@@ -97,6 +98,10 @@ export function buildWhatsAppMessage(
     msg += `${i + 1}. ${item.product.name}${variationStr}\n`
     msg += `   ${item.quantity} adet x $${item.unitPriceUsd.toFixed(2)} = $${item.lineTotalUsd.toFixed(2)}\n`
   })
+
+  if (coupon) {
+    msg += `\n🎟️ *Kupon:* ${coupon.code} (-${coupon.discount.toFixed(2)} ₺)\n`
+  }
 
   msg += `\n💰 *Toplam:* $${totalUsd.toFixed(2)} / ${totalTl.toFixed(2)} ₺\n`
 

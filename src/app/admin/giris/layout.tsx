@@ -3,5 +3,5 @@ export default function AdminAuthLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <>{children}</>
+  return <div className="admin-panel">{children}</div>
 }

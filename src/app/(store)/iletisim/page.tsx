@@ -15,8 +15,6 @@ interface SiteSettings {
   contact_address?: string
   working_hours?: string
   whatsapp_number?: string
-  map_lat?: string
-  map_lng?: string
 }
 
 export default function IletisimPage() {
@@ -26,7 +24,7 @@ export default function IletisimPage() {
   const [sent, setSent] = useState(false)
 
   useEffect(() => {
-    fetch("/api/admin/settings")
+    fetch("/api/settings")
       .then((r) => r.json())
       .then((data) => {
         const map: SiteSettings = {}
@@ -72,8 +70,6 @@ export default function IletisimPage() {
   }
 
   const whatsappNumber = settings.whatsapp_number?.replace(/\D/g, "") || ""
-  const mapLat = settings.map_lat || "41.0082"
-  const mapLng = settings.map_lng || "28.9784"
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -231,17 +227,6 @@ export default function IletisimPage() {
               </a>
             )}
 
-            {/* Google Maps embed */}
-            <div className="overflow-hidden rounded-xl border">
-              <iframe
-                title="Konum"
-                width="100%"
-                height="220"
-                loading="lazy"
-                src={`https://maps.google.com/maps?q=${mapLat},${mapLng}&z=15&output=embed`}
-                className="border-0"
-              />
-            </div>
           </div>
         </div>
       </div>

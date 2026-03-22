@@ -1,9 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, User, Menu, Heart, Package, LogOut, ChevronDown, Phone, Mail, ShoppingBag, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Search, User, Menu, Heart, Package, LogOut, Phone, MapPin, ShoppingBag, X, ChevronDown } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import {
   DropdownMenu,
@@ -15,69 +13,72 @@ import {
 import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
 import { MiniCart } from "@/components/store/mini-cart"
-import { useCurrency } from "@/hooks/use-currency"
 
-export function Header({ siteName = "MARKET" }: { siteName?: string }) {
+interface Category {
+  id: string
+  name: string
+  slug: string
+}
+
+export function Header({
+  siteName = "MARKET",
+  categories = [],
+}: {
+  siteName?: string
+  categories?: Category[]
+}) {
   const { data: session } = useSession()
-  const { currency, setCurrency } = useCurrency()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-[var(--market-header-bg)]/95 backdrop-blur-md">
-        {/* Top announcement bar */}
-        <div className="hidden border-b border-[#E7E0D8] bg-[#1C1917] md:block">
-          <div className="mx-auto flex h-9 max-w-7xl items-center justify-between px-6 text-xs text-stone-400">
-            <div className="flex items-center gap-5">
-              <a href="tel:+905551234567" className="flex items-center gap-1.5 transition-colors hover:text-white">
+      <header className="sticky top-0 z-40 w-full" style={{ backgroundColor: 'var(--market-header-bg)' }}>
+        {/* Top bar */}
+        <div className="hidden border-b md:block" style={{ borderColor: 'rgba(255,102,0,0.15)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
+          <div className="mx-auto flex h-9 max-w-7xl items-center justify-between px-6">
+            {/* Left: location */}
+            <div className="flex items-center gap-1.5 text-xs" style={{ color: '#9A9488' }}>
+              <MapPin className="size-3" style={{ color: 'var(--market-primary)' }} />
+              <span style={{ fontWeight: 700 }}>İstoç İstanbul</span>
+            </div>
+            {/* Right: phone with WhatsApp badge */}
+            <div className="flex items-center gap-4">
+              <a
+                href="tel:+905551234567"
+                className="flex items-center gap-2 text-xs transition-colors"
+                style={{ color: '#9A9488' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--market-primary)')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#9A9488')}
+              >
+                {/* WhatsApp badge */}
+                <span
+                  className="flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+                  style={{ backgroundColor: '#25D366', color: '#fff', letterSpacing: '0.02em' }}
+                >
+                  WP
+                </span>
                 <Phone className="size-3" />
                 +90 555 123 4567
               </a>
-              <a href="mailto:info@market.com" className="flex items-center gap-1.5 transition-colors hover:text-white">
-                <Mail className="size-3" />
-                info@market.com
-              </a>
-            </div>
-            <div className="flex items-center gap-0.5 rounded-full bg-white/10 p-0.5">
-              <button
-                onClick={() => setCurrency("USD")}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
-                  currency === "USD"
-                    ? "bg-amber-600 text-white"
-                    : "text-stone-400 hover:text-white"
-                }`}
-              >
-                $ USD
-              </button>
-              <button
-                onClick={() => setCurrency("TRY")}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
-                  currency === "TRY"
-                    ? "bg-amber-600 text-white"
-                    : "text-stone-400 hover:text-white"
-                }`}
-              >
-                ₺ TL
-              </button>
             </div>
           </div>
         </div>
 
         {/* Main header */}
-        <div className="border-b border-[#E7E0D8]">
-          <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-6 md:h-[72px]">
+        <div className="border-b" style={{ borderColor: 'rgba(255,102,0,0.15)' }}>
+          <div className="mx-auto flex h-[68px] max-w-7xl items-center gap-6 px-6">
             {/* Mobile menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger
-                render={<button className="inline-flex items-center justify-center rounded-lg p-2 transition-colors hover:bg-stone-100 md:hidden" />}
+                render={<button className="inline-flex items-center justify-center rounded-lg p-2 transition-colors md:hidden" style={{ color: '#9A9488' }} />}
               >
-                <Menu className="size-5 text-stone-700" />
+                <Menu className="size-5" />
               </SheetTrigger>
-              <SheetContent side="left" className="w-80 border-r-0 bg-[#FEFBF6] p-0">
-                <SheetHeader className="border-b border-[#E7E0D8] px-6 py-5">
+              <SheetContent side="left" className="w-80 border-r p-0" style={{ backgroundColor: '#111111', borderColor: 'rgba(255,102,0,0.15)' }}>
+                <SheetHeader className="border-b px-6 py-5" style={{ borderColor: 'rgba(255,102,0,0.15)' }}>
                   <SheetTitle>
-                    <Link href="/" className="font-heading text-2xl font-bold tracking-tight text-stone-900" onClick={() => setMobileMenuOpen(false)}>
+                    <Link href="/" className="text-2xl font-bold tracking-wide" style={{ color: 'var(--market-primary)' }} onClick={() => setMobileMenuOpen(false)}>
                       {siteName}
                     </Link>
                   </SheetTitle>
@@ -87,37 +88,58 @@ export function Header({ siteName = "MARKET" }: { siteName?: string }) {
                     { href: "/", label: "Ana Sayfa" },
                     { href: "/urunler", label: "Ürünler" },
                     { href: "/iletisim", label: "İletişim" },
-                    { href: "/sss", label: "SSS" },
                   ].map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="rounded-lg px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 hover:text-stone-900"
+                      className="rounded-lg px-4 py-3 text-sm font-bold transition-colors"
+                      style={{ color: '#9A9488' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--market-primary)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,102,0,0.05)' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#9A9488'; (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {item.label}
                     </Link>
                   ))}
-                  <div className="my-3 h-px bg-[#E7E0D8]" />
+                  {categories.length > 0 && (
+                    <>
+                      <div className="my-2 h-px" style={{ backgroundColor: 'rgba(255,102,0,0.15)' }} />
+                      <p className="px-4 py-1 text-xs font-bold uppercase tracking-widest" style={{ color: '#555' }}>Kategoriler</p>
+                      {categories.map((cat) => (
+                        <Link
+                          key={cat.id}
+                          href={`/urunler?kategori=${cat.slug}`}
+                          className="rounded-lg px-4 py-2.5 text-sm font-bold transition-colors"
+                          style={{ color: '#9A9488' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--market-primary)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,102,0,0.05)' }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#9A9488'; (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {cat.name}
+                        </Link>
+                      ))}
+                    </>
+                  )}
+                  <div className="my-3 h-px" style={{ backgroundColor: 'rgba(255,102,0,0.15)' }} />
                   {session?.user ? (
                     <>
-                      <Link href="/hesabim" className="rounded-lg px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100" onClick={() => setMobileMenuOpen(false)}>
-                        Hesabim
-                      </Link>
-                      <Link href="/siparislerim" className="rounded-lg px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100" onClick={() => setMobileMenuOpen(false)}>
-                        Siparislerim
-                      </Link>
-                      <button onClick={() => { setMobileMenuOpen(false); signOut() }} className="rounded-lg px-4 py-3 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50">
-                        Cikis Yap
+                      <Link href="/hesabim" className="rounded-lg px-4 py-3 text-sm font-bold transition-colors" style={{ color: '#9A9488' }} onClick={() => setMobileMenuOpen(false)}>Hesabım</Link>
+                      <Link href="/siparislerim" className="rounded-lg px-4 py-3 text-sm font-bold transition-colors" style={{ color: '#9A9488' }} onClick={() => setMobileMenuOpen(false)}>Siparişlerim</Link>
+                      <button onClick={() => { setMobileMenuOpen(false); signOut() }} className="rounded-lg px-4 py-3 text-left text-sm font-bold transition-colors" style={{ color: '#EF4444' }}>
+                        Çıkış Yap
                       </button>
                     </>
                   ) : (
                     <div className="flex flex-col gap-2 px-4 pt-2">
                       <Link href="/giris" onClick={() => setMobileMenuOpen(false)}>
-                        <Button className="w-full bg-amber-700 hover:bg-amber-800 text-white" size="sm">Giris Yap</Button>
+                        <button className="w-full rounded-lg py-2.5 text-sm font-bold transition-all" style={{ backgroundColor: 'var(--market-primary)', color: '#FFFFFF' }}>
+                          Giriş Yap
+                        </button>
                       </Link>
                       <Link href="/kayit" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="outline" className="w-full border-[#E7E0D8]" size="sm">Uye Ol</Button>
+                        <button className="w-full rounded-lg border py-2.5 text-sm font-bold transition-all" style={{ borderColor: 'rgba(255,102,0,0.25)', color: '#9A9488' }}>
+                          Üye Ol
+                        </button>
                       </Link>
                     </div>
                   )}
@@ -127,38 +149,46 @@ export function Header({ siteName = "MARKET" }: { siteName?: string }) {
 
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
-              <span className="text-2xl font-bold tracking-tight text-stone-900 md:text-[28px]" style={{ fontFamily: 'var(--font-heading), serif' }}>
+              <span className="text-2xl font-bold tracking-[0.08em]" style={{ color: 'var(--market-primary)' }}>
                 {siteName}
               </span>
             </Link>
 
             {/* Desktop nav */}
-            <nav className="hidden items-center gap-1 md:flex">
+            <nav className="hidden items-center gap-0.5 md:flex">
               {[
                 { href: "/urunler", label: "Ürünler" },
                 { href: "/iletisim", label: "İletişim" },
-                { href: "/sss", label: "SSS" },
               ].map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="rounded-lg px-3.5 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900"
+                  className="rounded-lg px-4 py-2 text-sm font-bold transition-colors"
+                  style={{ color: '#9A9488' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--market-primary)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#9A9488')}
                 >
                   {item.label}
                 </Link>
               ))}
             </nav>
 
-            {/* Spacer */}
             <div className="flex-1" />
 
-            {/* Search */}
+            {/* Desktop search */}
             <div className="hidden max-w-xs flex-1 md:block">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" />
-                <Input
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2" style={{ color: '#4A4640' }} />
+                <input
                   placeholder="Ürün ara..."
-                  className="h-10 rounded-xl border-[#E7E0D8] bg-white pl-10 text-sm shadow-sm placeholder:text-stone-400 focus:border-amber-400 focus:ring-amber-400/20"
+                  className="h-9 w-full rounded-xl pl-10 pr-4 text-sm font-bold outline-none transition-all"
+                  style={{
+                    backgroundColor: 'rgba(255,102,0,0.06)',
+                    border: '1px solid rgba(255,102,0,0.2)',
+                    color: '#F5F0E8',
+                  }}
+                  onFocus={e => (e.currentTarget.style.borderColor = 'rgba(255,102,0,0.5)')}
+                  onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,102,0,0.2)')}
                 />
               </div>
             </div>
@@ -167,17 +197,18 @@ export function Header({ siteName = "MARKET" }: { siteName?: string }) {
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="inline-flex items-center justify-center rounded-lg p-2 text-stone-600 transition-colors hover:bg-stone-100 md:hidden"
+                className="inline-flex items-center justify-center rounded-lg p-2 transition-colors md:hidden"
+                style={{ color: '#6B6560' }}
               >
-                <Search className="size-5" />
+                {searchOpen ? <X className="size-5" /> : <Search className="size-5" />}
               </button>
 
-              {/* User desktop */}
+              {/* User */}
               <div className="hidden md:block">
                 {session?.user ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger
-                      render={<button className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900" />}
+                      render={<button className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-bold transition-colors" style={{ color: '#9A9488' }} />}
                     >
                       <User className="size-4" />
                       <span className="max-w-20 truncate">{session.user.name?.split(" ")[0] || "Hesap"}</span>
@@ -185,38 +216,44 @@ export function Header({ siteName = "MARKET" }: { siteName?: string }) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" sideOffset={8}>
                       <DropdownMenuItem render={<Link href="/hesabim" />}>
-                        <User className="size-4" />
-                        Hesabim
+                        <User className="size-4" /> Hesabım
                       </DropdownMenuItem>
                       <DropdownMenuItem render={<Link href="/siparislerim" />}>
-                        <Package className="size-4" />
-                        Siparislerim
+                        <Package className="size-4" /> Siparişlerim
                       </DropdownMenuItem>
                       <DropdownMenuItem render={<Link href="/favorilerim" />}>
-                        <Heart className="size-4" />
-                        Favorilerim
+                        <Heart className="size-4" /> Favorilerim
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem variant="destructive" onClick={() => signOut()}>
-                        <LogOut className="size-4" />
-                        Cikis Yap
+                        <LogOut className="size-4" /> Çıkış Yap
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
                   <div className="flex items-center gap-2">
                     <Link href="/giris">
-                      <Button variant="ghost" size="sm" className="text-stone-600 hover:text-stone-900">Giris</Button>
+                      <button className="px-4 py-2 text-sm font-bold transition-colors" style={{ color: '#9A9488' }}
+                        onMouseEnter={e => (e.currentTarget.style.color = 'var(--market-primary)')}
+                        onMouseLeave={e => (e.currentTarget.style.color = '#9A9488')}
+                      >
+                        Giriş
+                      </button>
                     </Link>
                     <Link href="/kayit">
-                      <Button size="sm" className="bg-amber-700 text-white hover:bg-amber-800">Uye Ol</Button>
+                      <button className="rounded-lg px-4 py-2 text-sm font-bold transition-all hover:opacity-90 active:scale-[0.97]" style={{ backgroundColor: 'var(--market-primary)', color: '#FFFFFF' }}>
+                        Üye Ol
+                      </button>
                     </Link>
                   </div>
                 )}
               </div>
 
               <Link href="/favorilerim" className="hidden md:inline-flex">
-                <button className="inline-flex items-center justify-center rounded-lg p-2 text-stone-600 transition-colors hover:bg-stone-100 hover:text-amber-700">
+                <button className="inline-flex items-center justify-center rounded-lg p-2 transition-colors" style={{ color: '#6B6560' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--market-primary)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#6B6560')}
+                >
                   <Heart className="size-5" />
                 </button>
               </Link>
@@ -226,12 +263,50 @@ export function Header({ siteName = "MARKET" }: { siteName?: string }) {
           </div>
         </div>
 
-        {/* Mobile search expandable */}
+        {/* Categories nav bar */}
+        {categories.length > 0 && (
+          <div className="hidden border-b md:block" style={{ borderColor: 'rgba(255,102,0,0.15)', backgroundColor: 'rgba(0,0,0,0.15)' }}>
+            <div className="mx-auto flex h-10 max-w-7xl items-center gap-1 overflow-x-auto px-6">
+              <Link
+                href="/urunler"
+                className="flex-shrink-0 rounded-md px-3 py-1 text-xs font-bold transition-colors"
+                style={{ color: '#9A9488' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#fff'; (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,102,0,0.15)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#9A9488'; (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+              >
+                Tümü
+              </Link>
+              {categories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/urunler?kategori=${cat.slug}`}
+                  className="flex-shrink-0 rounded-md px-3 py-1 text-xs font-bold transition-colors"
+                  style={{ color: '#9A9488' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#fff'; (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,102,0,0.15)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#9A9488'; (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+                >
+                  {cat.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile search */}
         {searchOpen && (
-          <div className="border-b border-[#E7E0D8] bg-white px-6 py-3 md:hidden">
+          <div className="border-b px-6 py-3 md:hidden" style={{ borderColor: 'rgba(255,102,0,0.15)', backgroundColor: '#111111' }}>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" />
-              <Input placeholder="Ürün ara..." className="pl-10 border-[#E7E0D8]" autoFocus />
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2" style={{ color: '#4A4640' }} />
+              <input
+                placeholder="Ürün ara..."
+                autoFocus
+                className="h-10 w-full rounded-xl pl-10 pr-4 text-sm font-bold outline-none"
+                style={{
+                  backgroundColor: 'rgba(255,102,0,0.06)',
+                  border: '1px solid rgba(255,102,0,0.2)',
+                  color: '#F5F0E8',
+                }}
+              />
             </div>
           </div>
         )}

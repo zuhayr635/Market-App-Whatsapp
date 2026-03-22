@@ -364,7 +364,7 @@ export default function AdreslerimPage() {
         <span className="text-stone-300">/</span>
         <h1
           className="text-2xl font-bold text-stone-900"
-          style={{ fontFamily: "var(--font-heading), serif" }}
+          style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
         >
           Adreslerim
         </h1>

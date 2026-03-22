@@ -24,7 +24,7 @@ export default async function KategorilerPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-12">
-      <h1 className="mb-8 text-3xl font-bold text-stone-900" style={{ fontFamily: 'var(--font-heading), serif' }}>Kategoriler</h1>
+      <h1 className="mb-8 text-3xl font-bold text-stone-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>Kategoriler</h1>
 
       {categories.length === 0 ? (
         <div className="py-16 text-center">
@@ -41,7 +41,7 @@ export default async function KategorilerPage() {
               <div className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full bg-stone-50 text-stone-400 transition-colors group-hover:bg-amber-50 group-hover:text-amber-600">
                 <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
               </div>
-              <h3 className="text-xl font-bold text-stone-900" style={{ fontFamily: 'var(--font-heading), serif' }}>
+              <h3 className="text-xl font-bold text-stone-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
                 {cat.name}
               </h3>
               {cat.description && (

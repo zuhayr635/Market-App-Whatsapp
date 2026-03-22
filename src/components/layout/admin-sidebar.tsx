@@ -2,51 +2,58 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import {
-  LayoutDashboard,
-  Package,
-  FolderTree,
-  ShoppingCart,
-  Users,
-  Image,
-  FileText,
-  Settings,
-  Palette,
-  BarChart3,
-  Activity,
-  PanelLeftClose,
-  PanelLeftOpen,
-  TrendingUp,
-  Tag,
-  Bell,
-  MessageSquare,
+  LayoutDashboard, Package, FolderTree, ShoppingCart, Users,
+  Image, FileText, Settings, Palette, BarChart3, Activity,
+  PanelLeftClose, PanelLeftOpen, TrendingUp, Tag, Bell,
+  MessageSquare, CreditCard,
 } from "lucide-react"
 import { useState } from "react"
 
-const menuItems = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
-  { label: "Ürünler", icon: Package, href: "/admin/urunler" },
-  { label: "Kategoriler", icon: FolderTree, href: "/admin/kategoriler" },
-  { label: "Siparişler", icon: ShoppingCart, href: "/admin/siparisler" },
-  { label: "Kullanıcılar", icon: Users, href: "/admin/kullanicilar" },
-  { label: "Kuponlar", icon: Tag, href: "/admin/kuponlar" },
-  { label: "Stok Uyarıları", icon: Bell, href: "/admin/stok-uyarilari" },
-  { label: "Bannerlar", icon: Image, href: "/admin/bannerlar" },
-  { label: "Sayfalar", icon: FileText, href: "/admin/sayfalar" },
-  { type: "separator" as const },
-  { label: "Ayarlar", icon: Settings, href: "/admin/ayarlar/genel" },
-  { label: "Döviz Kuru", icon: TrendingUp, href: "/admin/ayarlar/doviz" },
-  { label: "SMS Ayarları", icon: MessageSquare, href: "/admin/ayarlar/sms" },
-  { label: "Tema", icon: Palette, href: "/admin/tema" },
-  { label: "Raporlar", icon: BarChart3, href: "/admin/raporlar" },
-  { label: "Sistem Logları", icon: Activity, href: "/admin/sistem-loglari" },
-] as const
-
-type MenuItem =
-  | { label: string; icon: React.ComponentType<{ className?: string }>; href: string }
-  | { type: "separator" }
+const menuGroups = [
+  {
+    items: [
+      { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
+    ],
+  },
+  {
+    label: "MAĞAZA",
+    items: [
+      { label: "Ürünler", icon: Package, href: "/admin/urunler" },
+      { label: "Kategoriler", icon: FolderTree, href: "/admin/kategoriler" },
+      { label: "Siparişler", icon: ShoppingCart, href: "/admin/siparisler" },
+      { label: "Kuponlar", icon: Tag, href: "/admin/kuponlar" },
+      { label: "Bannerlar", icon: Image, href: "/admin/bannerlar" },
+    ],
+  },
+  {
+    label: "MÜŞTERİLER",
+    items: [
+      { label: "Kullanıcılar", icon: Users, href: "/admin/kullanicilar" },
+      { label: "Sepetler", icon: ShoppingCart, href: "/admin/sepetler" },
+      { label: "İletişim", icon: MessageSquare, href: "/admin/iletisim" },
+      { label: "Stok Uyarıları", icon: Bell, href: "/admin/stok-uyarilari" },
+    ],
+  },
+  {
+    label: "YÖNETİM",
+    items: [
+      { label: "Sayfalar", icon: FileText, href: "/admin/sayfalar" },
+      { label: "Tema", icon: Palette, href: "/admin/tema" },
+      { label: "Raporlar", icon: BarChart3, href: "/admin/raporlar" },
+      { label: "Sistem Logları", icon: Activity, href: "/admin/sistem-loglari" },
+    ],
+  },
+  {
+    label: "AYARLAR",
+    items: [
+      { label: "Genel", icon: Settings, href: "/admin/ayarlar/genel" },
+      { label: "Döviz Kuru", icon: TrendingUp, href: "/admin/ayarlar/doviz" },
+      { label: "SMS", icon: MessageSquare, href: "/admin/ayarlar/sms" },
+      { label: "IBAN", icon: CreditCard, href: "/admin/ayarlar/iban" },
+    ],
+  },
+]
 
 export function AdminSidebar() {
   const pathname = usePathname()
@@ -59,79 +66,106 @@ export function AdminSidebar() {
 
   return (
     <aside
-      className={cn(
-        "hidden h-screen flex-col bg-slate-900 text-white transition-all duration-300 md:flex",
-        collapsed ? "w-16" : "w-64"
-      )}
+      className="hidden h-screen flex-col transition-all duration-300 md:flex overflow-hidden"
+      style={{
+        width: collapsed ? "56px" : "220px",
+        backgroundColor: 'var(--admin-sidebar)',
+        borderRight: '1px solid var(--admin-border)',
+        flexShrink: 0,
+      }}
     >
       {/* Logo */}
-      <div className="flex h-14 items-center border-b border-slate-700 px-4">
+      <div
+        className="flex h-12 items-center px-4 shrink-0"
+        style={{ borderBottom: '1px solid var(--admin-border)' }}
+      >
         {collapsed ? (
-          <span className="mx-auto text-lg font-bold">M</span>
+          <div className="mx-auto flex size-7 items-center justify-center rounded-lg"
+            style={{ backgroundColor: 'var(--admin-teal-dim)', border: '1px solid var(--admin-teal-border)' }}>
+            <span className="text-xs font-black" style={{ color: 'var(--admin-teal)' }}>M</span>
+          </div>
         ) : (
-          <span className="text-lg font-bold tracking-wide">MARKET Admin</span>
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-7 items-center justify-center rounded-lg"
+              style={{ backgroundColor: 'var(--admin-teal-dim)', border: '1px solid var(--admin-teal-border)' }}>
+              <span className="text-xs font-black" style={{ color: 'var(--admin-teal)' }}>M</span>
+            </div>
+            <div>
+              <p className="text-sm font-bold leading-none tracking-wide" style={{ color: '#E2E8F0' }}>MARKET</p>
+              <p className="text-[9px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--admin-teal)' }}>admin</p>
+            </div>
+          </div>
         )}
       </div>
 
       {/* Menu */}
-      <nav className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-1 px-2">
-          {(menuItems as readonly MenuItem[]).map((item, index) => {
-            if ("type" in item && item.type === "separator") {
-              return (
-                <li key={`sep-${index}`} className="my-3">
-                  <div className="h-px bg-slate-700" />
-                </li>
-              )
-            }
-
-            if (!("href" in item)) return null
-
-            const Icon = item.icon
-            const active = isActive(item.href)
-
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    active
-                      ? "bg-slate-700 text-white"
-                      : "text-slate-300 hover:bg-slate-800 hover:text-white",
-                    collapsed && "justify-center px-2"
-                  )}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <Icon className="h-5 w-5 shrink-0" />
-                  {!collapsed && <span>{item.label}</span>}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
+      <nav className="flex-1 overflow-y-auto py-3" style={{ scrollbarWidth: 'none' }}>
+        {menuGroups.map((group, gi) => (
+          <div key={gi} className={gi > 0 ? "mt-4" : ""}>
+            {group.label && !collapsed && (
+              <p className="mb-1.5 px-4 text-[9px] font-bold uppercase tracking-[0.2em]"
+                style={{ color: 'var(--admin-text-dim)' }}>
+                {group.label}
+              </p>
+            )}
+            {group.label && collapsed && gi > 0 && (
+              <div className="mx-3 mb-1.5 h-px" style={{ backgroundColor: 'var(--admin-border)' }} />
+            )}
+            <ul className="space-y-0.5 px-2">
+              {group.items.map((item) => {
+                const Icon = item.icon
+                const active = isActive(item.href)
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      title={collapsed ? item.label : undefined}
+                      className="relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all duration-150"
+                      style={active ? {
+                        backgroundColor: 'var(--admin-teal-dim)',
+                        color: 'var(--admin-teal)',
+                        boxShadow: 'inset 2px 0 0 var(--admin-teal)',
+                      } : {
+                        color: 'var(--admin-text-muted)',
+                      }}
+                      onMouseEnter={e => {
+                        if (!active) {
+                          (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.04)'
+                          ;(e.currentTarget as HTMLElement).style.color = '#CBD5E1'
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (!active) {
+                          (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
+                          ;(e.currentTarget as HTMLElement).style.color = 'var(--admin-text-muted)'
+                        }
+                      }}
+                    >
+                      <Icon className="size-4 shrink-0" />
+                      {!collapsed && <span className="truncate">{item.label}</span>}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        ))}
       </nav>
 
-      {/* Collapse toggle */}
-      <div className="border-t border-slate-700 p-2">
-        <Button
-          variant="ghost"
-          size="icon"
+      {/* Collapse */}
+      <div className="shrink-0 p-2" style={{ borderTop: '1px solid var(--admin-border)' }}>
+        <button
           onClick={() => setCollapsed(!collapsed)}
-          className={cn(
-            "h-9 w-full text-slate-300 hover:bg-slate-800 hover:text-white",
-            collapsed ? "justify-center" : "justify-start gap-3 px-3"
-          )}
+          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-all"
+          style={{ color: 'var(--admin-text-muted)' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.color = '#CBD5E1' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--admin-text-muted)' }}
         >
-          {collapsed ? (
-            <PanelLeftOpen className="h-5 w-5" />
-          ) : (
-            <>
-              <PanelLeftClose className="h-5 w-5" />
-              <span className="text-sm">Daralt</span>
-            </>
-          )}
-        </Button>
+          {collapsed
+            ? <PanelLeftOpen className="mx-auto size-4" />
+            : <><PanelLeftClose className="size-4 shrink-0" /><span>Daralt</span></>
+          }
+        </button>
       </div>
     </aside>
   )

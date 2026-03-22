@@ -6,8 +6,10 @@ import { CurrencyProvider } from "@/context/currency-context"
 import { CookieConsent } from "@/components/cookie-consent"
 import { getSiteSettings } from "@/lib/seo"
 import { db } from "@/lib/db"
+import { getCached } from "@/lib/cache"
 import { AnnouncementBarWrapper } from "@/components/layout/announcement-bar-wrapper"
 import { PopupModal } from "@/components/store/popup-modal"
+import { Toaster } from "@/components/ui/sonner"
 
 export async function generateMetadata(): Promise<Metadata> {
   const { siteName, siteDescription } = await getSiteSettings()
@@ -26,13 +28,20 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const { siteName } = await getSiteSettings()
 
-  const announcementSettings = await db.setting.findMany({
-    where: { group: "announcement" },
+  const categories = await getCached("headerCategories", 300_000, async () => {
+    return db.category.findMany({
+      where: { status: true, parentId: null },
+      select: { id: true, name: true, slug: true },
+      orderBy: { sortOrder: "asc" },
+    })
   })
-  const announcementMap: Record<string, string> = {}
-  for (const s of announcementSettings) {
-    announcementMap[s.key] = s.value
-  }
+
+  const announcementMap = await getCached("announcementSettings", 300_000, async () => {
+    const settings = await db.setting.findMany({ where: { group: "announcement" } })
+    const map: Record<string, string> = {}
+    for (const s of settings) map[s.key] = s.value
+    return map
+  })
   const announcementEnabled = announcementMap["announcement_enabled"] === "true"
   const announcementText = announcementMap["announcement_text"] ?? ""
   const announcementLink = announcementMap["announcement_link"] ?? ""
@@ -48,12 +57,13 @@ export default async function StoreLayout({ children }: { children: React.ReactN
             color={announcementColor}
           />
         )}
-        <Header siteName={siteName} />
+        <Header siteName={siteName} categories={categories} />
         <main className="flex-1">{children}</main>
         <Footer siteName={siteName} />
         <WhatsAppFloat />
         <CookieConsent />
         <PopupModal />
+        <Toaster position="top-right" richColors />
       </div>
     </CurrencyProvider>
   )

@@ -154,7 +154,7 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
             {slide?.title && (
               <h1
                 className="mb-4 text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl"
-                style={{ fontFamily: "var(--font-heading), serif" }}
+                style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
               >
                 {slide.title}
               </h1>

@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation"
 import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Loader2, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Select } from "@/components/ui/select"
 import { toast } from "sonner"
 import {
   type CartData,
@@ -267,7 +266,7 @@ export default function CartPage() {
                   </p>
                 )}
                 <p className="text-sm font-semibold">
-                  {formatPrice(item.unitPriceUsd)} / {formatPrice(item.unitPriceTl, "TL")}
+                  {formatPrice(item.unitPriceTl, "TL")}
                 </p>
               </div>
 
@@ -310,7 +309,7 @@ export default function CartPage() {
                 </div>
 
                 <p className="text-sm font-bold">
-                  {formatPrice(item.lineTotalUsd)}
+                  {formatPrice(item.lineTotalTl, "TL")}
                 </p>
               </div>
             </div>
@@ -324,11 +323,7 @@ export default function CartPage() {
 
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Ara Toplam (USD)</span>
-                <span className="font-medium">{formatPrice(cart.totalUsd)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Ara Toplam (TL)</span>
+                <span className="text-muted-foreground">Ara Toplam</span>
                 <span className="font-medium">{formatPrice(cart.totalTl, "TL")}</span>
               </div>
               {couponDiscount > 0 && (
@@ -340,12 +335,7 @@ export default function CartPage() {
               <div className="my-2 h-px bg-border" />
               <div className="flex justify-between text-base font-bold">
                 <span>Toplam</span>
-                <div className="text-right">
-                  <div>{formatPrice(cart.totalUsd)}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {formatPrice(Math.max(0, cart.totalTl - couponDiscount), "TL")}
-                  </div>
-                </div>
+                <span>{formatPrice(Math.max(0, cart.totalTl - couponDiscount), "TL")}</span>
               </div>
             </div>
 

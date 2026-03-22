@@ -40,6 +40,8 @@ model User {
   orders     Order[]
   recentlyViewed RecentlyViewed[]
 
+  @@index([status])
+  @@index([role])
   @@map("users")
 }
 
@@ -130,6 +132,7 @@ model AdminLog {
 
   admin AdminUser @relation(fields: [adminId], references: [id])
 
+  @@index([createdAt])
   @@map("admin_logs")
 }
 
@@ -163,6 +166,8 @@ model Category {
   children Category[] @relation("CategoryTree")
   products ProductCategory[]
 
+  @@index([parentId])
+  @@index([status])
   @@map("categories")
 }
 
@@ -224,6 +229,13 @@ model Product {
   recentlyViewed  RecentlyViewed[]
   stockAlerts     StockAlert[]
 
+  @@index([status])
+  @@index([status, isFeatured])
+  @@index([status, isNew])
+  @@index([status, isBestSeller])
+  @@index([status, createdAt])
+  @@index([status, sortOrder])
+  @@index([brandId])
   @@map("products")
 }
 
@@ -485,6 +497,10 @@ model Order {
   receipts     Receipt[]
   shipping     ShippingInfo?
 
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
   @@map("orders")
 }
 
@@ -653,6 +669,8 @@ model Banner {
   status     Boolean   @default(true)
   position   String    @default("homepage")
 
+  @@index([status, position])
+  @@index([sortOrder])
   @@map("banners")
 }
 
@@ -699,6 +717,7 @@ model Setting {
   value String @db.Text
   group String @default("general")
 
+  @@index([group])
   @@map("settings")
 }
 
@@ -739,6 +758,8 @@ model Notification {
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 
+  @@index([isRead])
+  @@index([createdAt])
   @@map("notifications")
 }
 
@@ -778,5 +799,7 @@ model StockAlert {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([productId, email])
+  @@index([isNotified])
+  @@index([email])
   @@map("stock_alerts")
 }

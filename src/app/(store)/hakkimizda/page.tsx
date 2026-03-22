@@ -16,7 +16,7 @@ export default async function HakkimizdaPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-12">
-      <h1 className="mb-8 text-3xl font-bold text-stone-900" style={{ fontFamily: 'var(--font-heading), serif' }}>
+      <h1 className="mb-8 text-3xl font-bold text-stone-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
         {page?.title || "Hakkımızda"}
       </h1>
 

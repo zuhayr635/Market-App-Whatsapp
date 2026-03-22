@@ -11,7 +11,7 @@ export default function HesabimPage() {
     return (
       <div className="mx-auto max-w-7xl px-6 py-20 text-center">
         <User className="mx-auto mb-4 size-12 text-stone-300" />
-        <h1 className="mb-2 text-2xl font-bold text-stone-900" style={{ fontFamily: 'var(--font-heading), serif' }}>Hesabım</h1>
+        <h1 className="mb-2 text-2xl font-bold text-stone-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>Hesabım</h1>
         <p className="mb-6 text-stone-500">Hesabınızı görmek için giriş yapın.</p>
         <Link href="/giris" className="inline-flex items-center gap-2 rounded-xl bg-amber-700 px-6 py-3 text-sm font-semibold text-white hover:bg-amber-800">
           Giriş Yap
@@ -28,7 +28,7 @@ export default function HesabimPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="mb-8 text-2xl font-bold text-stone-900" style={{ fontFamily: 'var(--font-heading), serif' }}>Hesabım</h1>
+      <h1 className="mb-8 text-2xl font-bold text-stone-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>Hesabım</h1>
 
       {/* User Info */}
       <div className="mb-8 rounded-2xl border border-[#E7E0D8] bg-white p-6">

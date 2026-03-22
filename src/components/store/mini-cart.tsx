@@ -124,7 +124,7 @@ export function MiniCart() {
                         </p>
                       )}
                       <p className="text-xs">
-                        {item.quantity} x {formatPrice(item.unitPriceUsd)}
+                        {item.quantity} x {formatPrice(item.unitPriceTl, "TL")}
                       </p>
                     </div>
                     <div className="flex flex-col items-end justify-between">
@@ -135,7 +135,7 @@ export function MiniCart() {
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                       <span className="text-xs font-bold">
-                        {formatPrice(item.lineTotalUsd)}
+                        {formatPrice(item.lineTotalTl, "TL")}
                       </span>
                     </div>
                   </div>
@@ -146,12 +146,7 @@ export function MiniCart() {
             <SheetFooter className="border-t pt-4">
               <div className="mb-3 flex w-full justify-between text-sm font-bold">
                 <span>Toplam</span>
-                <div className="text-right">
-                  <div>{formatPrice(cart.totalUsd)}</div>
-                  <div className="text-xs font-normal text-muted-foreground">
-                    {formatPrice(cart.totalTl, "TL")}
-                  </div>
-                </div>
+                <span>{formatPrice(cart.totalTl, "TL")}</span>
               </div>
               <Link href="/sepet" className="w-full" onClick={() => setOpen(false)}>
                 <Button className="w-full" size="sm">

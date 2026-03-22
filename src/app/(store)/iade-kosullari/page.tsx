@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function IadeKosullariPage() {
   return (
     <div className="mx-auto max-w-4xl px-6 py-12">
-      <h1 className="mb-8 text-3xl font-bold text-stone-900" style={{ fontFamily: 'var(--font-heading), serif' }}>İade Koşulları</h1>
+      <h1 className="mb-8 text-3xl font-bold text-stone-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>İade Koşulları</h1>
 
       <div className="space-y-6 text-stone-600 leading-relaxed">
         <section>

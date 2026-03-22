@@ -169,18 +169,15 @@ export default function SiparisDetayPage() {
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      {item.quantity} adet x ${item.unitPrice.toFixed(2)}
+                      {item.quantity} adet
                     </p>
                   </div>
-                  <p className="font-semibold">${item.totalPrice.toFixed(2)}</p>
+                  <p className="font-semibold">{(Number(item.totalPrice) * order.totalTl / order.totalUsd).toFixed(2)} ₺</p>
                 </div>
               ))}
               <div className="border-t pt-2 text-sm font-bold flex justify-between">
                 <span>Toplam</span>
-                <div className="text-right">
-                  <div>${order.totalUsd.toFixed(2)}</div>
-                  <div className="text-xs font-normal text-muted-foreground">{order.totalTl.toFixed(2)} ₺</div>
-                </div>
+                <span>{order.totalTl.toFixed(2)} ₺</span>
               </div>
             </div>
           </div>

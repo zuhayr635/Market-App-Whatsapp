@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useContext } from "react"
+import { CurrencyContext } from "@/context/currency-context"
 import {
   Heart,
   Share2,
@@ -12,9 +13,9 @@ import {
   Clock,
   Check,
   ShoppingBag,
+  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { ImageGallery } from "@/components/store/image-gallery"
 import { VariationSelector } from "@/components/store/variation-selector"
 import { QuantitySelector } from "@/components/store/quantity-selector"
@@ -179,9 +180,26 @@ export function ProductDetailClient({
   variationTypes,
   isLoggedIn,
 }: ProductDetailClientProps) {
+  const { rate } = useContext(CurrencyContext)
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
   const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [linkCopied, setLinkCopied] = useState(false)
+  const [activeTab, setActiveTab] = useState<string>(
+    product.tabs.length > 0 ? `tab-${product.tabs[0].id}` : "description"
+  )
+
+  // Check favorite status and track recently viewed
+  useEffect(() => {
+    if (!isLoggedIn) return
+    fetch("/api/favorites")
+      .then(r => r.json())
+      .then((favs: { productId: string }[]) => {
+        if (Array.isArray(favs)) setIsFavorited(favs.some(f => f.productId === product.id))
+      })
+      .catch(() => {})
+  }, [isLoggedIn, product.id])
 
   // Track recently viewed - call API on mount if user is logged in
   useEffect(() => {
@@ -216,11 +234,8 @@ export function ProductDetailClient({
   }, [product, selectedVariation])
 
   const currentPriceTl = useMemo(() => {
-    // Approximate TL price based on ratio
-    if (product.priceUsd === 0) return product.priceTl
-    const ratio = product.priceTl / product.priceUsd
-    return currentPriceUsd * ratio
-  }, [product, currentPriceUsd])
+    return currentPriceUsd * rate
+  }, [currentPriceUsd, rate])
 
   const discountPercent = useMemo(() => {
     if (!hasDiscount || originalPriceUsd === 0) return 0
@@ -253,6 +268,25 @@ export function ProductDetailClient({
         toast.success("Link kopyalandı!")
         setTimeout(() => setLinkCopied(false), 2000)
       })
+    }
+  }
+
+  const handleToggleFavorite = async () => {
+    if (!isLoggedIn) { toast.error("Favorilere eklemek için giriş yapın"); return }
+    setFavoriteLoading(true)
+    try {
+      const res = await fetch("/api/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId: product.id }),
+      })
+      const data = await res.json()
+      setIsFavorited(data.favorited)
+      toast.success(data.favorited ? "Favorilere eklendi" : "Favorilerden çıkarıldı")
+    } catch {
+      toast.error("İşlem başarısız")
+    } finally {
+      setFavoriteLoading(false)
     }
   }
 
@@ -331,11 +365,11 @@ export function ProductDetailClient({
             <div className="flex items-baseline gap-3">
               {hasDiscount && saleActive && (
                 <span className="text-lg text-muted-foreground line-through">
-                  ${originalPriceUsd.toFixed(2)}
+                  {(originalPriceUsd * rate).toFixed(2)} ₺
                 </span>
               )}
               <span className={`text-3xl font-bold ${hasDiscount && saleActive ? "text-red-600" : "text-foreground"}`}>
-                ${currentPriceUsd.toFixed(2)}
+                {currentPriceTl.toFixed(2)} ₺
               </span>
               {hasDiscount && saleActive && discountPercent > 0 && (
                 <span className="rounded-md bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
@@ -343,9 +377,6 @@ export function ProductDetailClient({
                 </span>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">
-              {currentPriceTl.toFixed(2)} TL
-            </p>
 
             {/* Sale countdown */}
             {hasDiscount && saleActive && product.saleEnd && (
@@ -415,9 +446,18 @@ export function ProductDetailClient({
 
           {/* Favorite + WhatsApp + Share */}
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="default" className="gap-2">
-              <Heart className="h-4 w-4" />
-              Favorilere Ekle
+            <Button
+              variant="outline"
+              size="default"
+              className="gap-2"
+              onClick={handleToggleFavorite}
+              disabled={favoriteLoading}
+            >
+              {favoriteLoading
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <Heart className={`h-4 w-4 ${isFavorited ? "fill-red-500 text-red-500" : ""}`} />
+              }
+              {isFavorited ? "Favorilerimde" : "Favorilere Ekle"}
             </Button>
 
             <a
@@ -471,80 +511,123 @@ export function ProductDetailClient({
       </div>
 
       {/* Product detail tabs */}
-      <div className="mt-10">
-        <Tabs defaultValue="description">
-          <TabsList variant="line" className="w-full justify-start border-b">
-            <TabsTrigger value="description">Aciklama</TabsTrigger>
-            {product.attributes.length > 0 && (
-              <TabsTrigger value="attributes">Özellikler</TabsTrigger>
-            )}
-            <TabsTrigger value="shipping">Kargo &amp; Iade</TabsTrigger>
-            {product.tabs.map((tab) => (
-              <TabsTrigger key={tab.id} value={`tab-${tab.id}`}>
-                {tab.title}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          <TabsContent value="description" className="pt-6">
-            {product.fullDesc ? (
-              <div
-                className="prose prose-sm max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{ __html: product.fullDesc }}
-              />
-            ) : product.shortDesc ? (
-              <p className="text-sm text-muted-foreground">{product.shortDesc}</p>
-            ) : (
-              <p className="text-sm text-muted-foreground">Ürün aciklamasi bulunmamaktadir.</p>
-            )}
-          </TabsContent>
-
+      <div className="mt-10 w-full">
+        {/* Tab navigation bar */}
+        <div className="flex overflow-x-auto border-b">
+          {/* Custom DB tabs — first */}
+          {product.tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(`tab-${tab.id}`)}
+              className={[
+                "shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+                activeTab === `tab-${tab.id}`
+                  ? "border-foreground text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground",
+              ].join(" ")}
+            >
+              {tab.title}
+            </button>
+          ))}
+          {/* Fallback Açıklama — only when no custom tabs */}
+          {product.tabs.length === 0 && (
+            <button
+              onClick={() => setActiveTab("description")}
+              className={[
+                "shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+                activeTab === "description"
+                  ? "border-foreground text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground",
+              ].join(" ")}
+            >
+              Açıklama
+            </button>
+          )}
+          {/* Attributes tab */}
           {product.attributes.length > 0 && (
-            <TabsContent value="attributes" className="pt-6">
-              <div className="overflow-hidden rounded-lg border">
-                <table className="w-full text-sm">
-                  <tbody>
-                    {product.attributes.map((attr, index) => (
-                      <tr
-                        key={attr.id}
-                        className={index % 2 === 0 ? "bg-muted/50" : "bg-background"}
-                      >
-                        <td className="px-4 py-2.5 font-medium text-foreground">
-                          {attr.attributeType.name}
-                        </td>
-                        <td className="px-4 py-2.5 text-muted-foreground">
-                          {attr.value}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <button
+              onClick={() => setActiveTab("attributes")}
+              className={[
+                "shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+                activeTab === "attributes"
+                  ? "border-foreground text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground",
+              ].join(" ")}
+            >
+              Özellikler
+            </button>
+          )}
+          {/* Shipping — always last */}
+          <button
+            onClick={() => setActiveTab("shipping")}
+            className={[
+              "shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+              activeTab === "shipping"
+                ? "border-foreground text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground",
+            ].join(" ")}
+          >
+            Kargo &amp; İade
+          </button>
+        </div>
+
+        {/* Tab content */}
+        <div className="pt-6 w-full">
+          {/* Custom DB tab contents */}
+          {product.tabs.map((tab) => (
+            activeTab === `tab-${tab.id}` && (
+              <div key={tab.id} className="prose prose-sm max-w-none dark:prose-invert">
+                <div dangerouslySetInnerHTML={{ __html: tab.content }} />
               </div>
-            </TabsContent>
+            )
+          ))}
+
+          {/* Fallback description */}
+          {activeTab === "description" && product.tabs.length === 0 && (
+            product.fullDesc ? (
+              <div className="prose prose-sm max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: product.fullDesc }} />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {product.shortDesc || "Ürün açıklaması bulunmamaktadır."}
+              </p>
+            )
           )}
 
-          <TabsContent value="shipping" className="pt-6">
+          {/* Attributes */}
+          {activeTab === "attributes" && product.attributes.length > 0 && (
+            <div className="overflow-hidden rounded-lg border">
+              <table className="w-full text-sm">
+                <tbody>
+                  {product.attributes.map((attr, index) => (
+                    <tr key={attr.id} className={index % 2 === 0 ? "bg-muted/50" : "bg-background"}>
+                      <td className="px-4 py-2.5 font-medium text-foreground w-48">
+                        {attr.attributeType.name}
+                      </td>
+                      <td className="px-4 py-2.5 text-muted-foreground">
+                        {attr.value}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Shipping */}
+          {activeTab === "shipping" && (
             <div className="space-y-4 text-sm text-muted-foreground">
               <div>
                 <h3 className="mb-1 font-medium text-foreground">Kargo Bilgileri</h3>
-                <p>Siparisleriniz 1-3 is günü icerisinde kargoya verilir. Kargo süresi bulundugunuz bölgeye göre degisiklik gösterebilir.</p>
+                <p>Siparişleriniz 1–3 iş günü içerisinde kargoya verilir. Kargo süresi bulunduğunuz bölgeye göre değişiklik gösterebilir.</p>
               </div>
               <div>
-                <h3 className="mb-1 font-medium text-foreground">Iade Politikasi</h3>
-                <p>Ürünlerimizi teslim aldiginiz tarihten itibaren 14 gün icerisinde iade edebilirsiniz. Iade edilecek ürünlerin kullanilmamis ve orijinal ambalajinda olmasi gerekmektedir.</p>
+                <h3 className="mb-1 font-medium text-foreground">İade Politikası</h3>
+                <p>Ürünlerimizi teslim aldığınız tarihten itibaren 14 gün içerisinde iade edebilirsiniz. İade edilecek ürünlerin kullanılmamış ve orijinal ambalajında olması gerekmektedir.</p>
               </div>
             </div>
-          </TabsContent>
-
-          {product.tabs.map((tab) => (
-            <TabsContent key={tab.id} value={`tab-${tab.id}`} className="pt-6">
-              <div
-                className="prose prose-sm max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{ __html: tab.content }}
-              />
-            </TabsContent>
-          ))}
-        </Tabs>
+          )}
+        </div>
       </div>
 
       {/* Downloadable files */}
@@ -611,6 +694,7 @@ export function ProductDetailClient({
 
 function RelatedProductsDisplay({ slug }: { slug: string }) {
   const [products, setProducts] = useState<any[]>([])
+  const { rate } = useContext(CurrencyContext)
 
   useEffect(() => {
     fetch(`/api/products/${slug}/related`)
@@ -637,7 +721,7 @@ function RelatedProductsDisplay({ slug }: { slug: string }) {
               )}
             </div>
             <p className="mt-2 text-xs font-medium text-stone-800 line-clamp-2 group-hover:text-amber-700">{p.name}</p>
-            <p className="text-xs text-amber-700 font-semibold">${Number(p.priceUsd).toFixed(2)}</p>
+            <p className="text-xs text-amber-700 font-semibold">{(Number(p.priceUsd) * rate).toFixed(2)} ₺</p>
           </a>
         ))}
       </div>
@@ -647,6 +731,7 @@ function RelatedProductsDisplay({ slug }: { slug: string }) {
 
 function RecentlyViewedSection() {
   const [products, setProducts] = useState<any[]>([])
+  const { rate } = useContext(CurrencyContext)
 
   useEffect(() => {
     fetch("/api/user/recently-viewed")
@@ -673,7 +758,7 @@ function RecentlyViewedSection() {
               )}
             </div>
             <p className="mt-2 text-xs font-medium text-stone-800 line-clamp-2 group-hover:text-amber-700">{p.name}</p>
-            <p className="text-xs text-amber-700 font-semibold">${Number(p.priceUsd).toFixed(2)}</p>
+            <p className="text-xs text-amber-700 font-semibold">{(Number(p.priceUsd) * rate).toFixed(2)} ₺</p>
           </a>
         ))}
       </div>

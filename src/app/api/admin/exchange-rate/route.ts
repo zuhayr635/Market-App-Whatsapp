@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import { clearCache } from "@/lib/cache"
 
 async function getCurrentRate() {
   const exchangeRate = await db.exchangeRate.findFirst({
@@ -62,6 +63,7 @@ export async function POST(request: Request) {
       update: { value: "manual" },
     })
 
+    clearCache("exchangeRate")
     return NextResponse.json({ rate: numRate, source: "manual" })
   } catch {
     return NextResponse.json({ error: "Kur güncellenemedi" }, { status: 500 })
@@ -102,6 +104,7 @@ export async function PUT() {
       update: { value: "auto" },
     })
 
+    clearCache("exchangeRate")
     return NextResponse.json({ rate: numRate, source: "auto" })
   } catch (error) {
     return NextResponse.json(

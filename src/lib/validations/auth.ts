@@ -22,7 +22,7 @@ export const registerSchema = z.object({
   passwordConfirm: z.string(),
   securityQuestion: z.string().min(1, "Guvenlik sorusu secimi zorunludur"),
   securityAnswer: z.string().min(1, "Guvenlik cevabi zorunludur"),
-  kvkkConsent: z.literal(true, { error: "KVKK onayi zorunludur" }),
+  kvkkConsent: z.literal(true, "KVKK onayi zorunludur"),
 }).refine((data) => data.password === data.passwordConfirm, {
   message: "Sifreler eslesmiyor",
   path: ["passwordConfirm"],

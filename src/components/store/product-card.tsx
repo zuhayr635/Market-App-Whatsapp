@@ -1,10 +1,15 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, ShoppingCart, ImageIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
+import { Heart, ShoppingCart, ImageIcon, Loader2, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useCurrency } from "@/hooks/use-currency"
+import { addToCart } from "@/lib/cart"
+import { toast } from "sonner"
 
 export interface ProductCardData {
   id: string
@@ -32,104 +37,139 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
+  const { rate } = useCurrency()
+  const { data: session } = useSession()
+  const router = useRouter()
+  const [cartLoading, setCartLoading] = useState(false)
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!session?.user) { router.push("/giris"); return }
+    setCartLoading(true)
+    try {
+      await addToCart(product.id)
+      toast.success("Ürün sepete eklendi!")
+      window.dispatchEvent(new CustomEvent("cart-updated"))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Sepete eklenemedi")
+    } finally {
+      setCartLoading(false)
+    }
+  }
+
   const image = product.images[0]
   const hasDiscount = product.salePriceUsd != null && product.salePriceUsd < product.priceUsd
   const discountPercent = hasDiscount
     ? Math.round(((product.priceUsd - product.salePriceUsd!) / product.priceUsd) * 100)
     : 0
   const displayPriceUsd = hasDiscount ? product.salePriceUsd! : product.priceUsd
-  const displayPriceTl = hasDiscount && product.salePriceTl ? product.salePriceTl : product.priceTl
+  const displayPriceTl = displayPriceUsd * rate
   const outOfStock = product.stockQty <= 0
 
   if (viewMode === "list") {
     return (
-      <div className="group flex gap-4 rounded-xl border bg-card p-3 transition-shadow hover:shadow-md sm:p-4">
-        {/* Image */}
+      <div
+        className="group flex gap-4 overflow-hidden rounded-2xl p-3 transition-all duration-300 sm:p-4"
+        style={{ backgroundColor: '#12141A', border: '1px solid rgba(255,102,0,0.12)' }}
+        onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,102,0,0.3)')}
+        onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,102,0,0.12)')}
+      >
         <Link
           href={`/urun/${product.slug}`}
-          className="relative flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 sm:h-40 sm:w-40"
+          className="relative flex h-32 w-32 shrink-0 overflow-hidden rounded-xl sm:h-40 sm:w-40"
+          style={{ backgroundColor: '#1A1D27' }}
         >
           {image ? (
             <Image
               src={image.url}
               alt={image.altText || product.name}
               fill
-              className="object-cover transition-transform group-hover:scale-105"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="160px"
               loading="lazy"
             />
           ) : (
-            <ImageIcon className="h-10 w-10 text-gray-300" />
+            <div className="flex h-full w-full items-center justify-center">
+              <ImageIcon className="h-10 w-10" style={{ color: '#2A2A35' }} />
+            </div>
           )}
-          {/* Badges */}
           <div className="absolute left-1.5 top-1.5 flex flex-col gap-1">
             {product.isNew && (
-              <span className="rounded bg-blue-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+              <span className="rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ backgroundColor: 'var(--gold)', color: '#0A0B0F' }}>
                 Yeni
               </span>
             )}
             {hasDiscount && (
-              <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+              <span className="rounded-md px-2 py-0.5 text-[10px] font-bold text-white" style={{ backgroundColor: '#7C1D1D' }}>
                 %{discountPercent}
               </span>
             )}
             {outOfStock && (
-              <span className="rounded bg-gray-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                Tukendi
+              <span className="rounded-md bg-zinc-700 px-2 py-0.5 text-[10px] font-semibold text-zinc-300">
+                Tükendi
               </span>
             )}
           </div>
         </Link>
 
-        {/* Details */}
-        <div className="flex flex-1 flex-col justify-between">
+        <div className="flex flex-1 flex-col justify-between min-w-0">
           <div>
             {product.brand && (
-              <p className="text-xs text-muted-foreground">{product.brand.name}</p>
+              <p className="mb-0.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--gold-dim)' }}>
+                {product.brand.name}
+              </p>
             )}
             <Link href={`/urun/${product.slug}`}>
-              <h3 className="line-clamp-2 text-sm font-medium text-foreground hover:text-blue-600 transition-colors sm:text-base">
+              <h3 className="line-clamp-2 text-sm font-semibold leading-snug transition-colors sm:text-base" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: '#F5F0E8' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--gold-light)')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#F5F0E8')}
+              >
                 {product.name}
               </h3>
             </Link>
             {product.shortDesc && (
-              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground sm:text-sm">
+              <p className="mt-1 line-clamp-2 text-xs sm:text-sm" style={{ color: '#4A4640' }}>
                 {product.shortDesc}
               </p>
             )}
           </div>
 
-          <div className="mt-2 flex items-end justify-between">
+          <div className="mt-3 flex items-end justify-between gap-2">
             <div>
-              <div className="flex items-center gap-2">
-                {hasDiscount && (
-                  <span className="text-sm text-muted-foreground line-through">
-                    ${product.priceUsd.toFixed(2)}
-                  </span>
-                )}
-                <span className={cn("text-lg font-bold", hasDiscount ? "text-red-600" : "text-foreground")}>
-                  ${displayPriceUsd.toFixed(2)}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {hasDiscount && product.salePriceTl ? (
-                  <>{displayPriceTl.toFixed(2)} TL</>
-                ) : (
-                  <>{product.priceTl.toFixed(2)} TL</>
-                )}
+              {hasDiscount && (
+                <p className="text-xs line-through" style={{ color: '#4A4640' }}>
+                  {(product.priceUsd * rate).toFixed(2)} ₺
+                </p>
+              )}
+              <p className="text-2xl font-semibold leading-none" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: 'var(--gold)' }}>
+                {displayPriceTl.toFixed(2)} ₺
               </p>
             </div>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="icon-sm">
-                <Heart className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                disabled={outOfStock}
+            <div className="flex items-center gap-1.5">
+              <button
+                className="flex h-9 w-9 items-center justify-center rounded-xl transition-all"
+                style={{ border: '1px solid rgba(255,102,0,0.15)', color: '#4A4640' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(239,68,68,0.3)'; (e.currentTarget as HTMLElement).style.color = '#EF4444'; (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(239,68,68,0.05)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,102,0,0.15)'; (e.currentTarget as HTMLElement).style.color = '#4A4640'; (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+                aria-label="Favorilere ekle"
               >
-                <ShoppingCart className="mr-1 h-3.5 w-3.5" />
-                Sepete Ekle
-              </Button>
+                <Heart className="h-4 w-4" />
+              </button>
+              <button
+                disabled={outOfStock || cartLoading}
+                onClick={handleAddToCart}
+                className="flex h-9 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold transition-all active:scale-[0.97]"
+                style={{
+                  backgroundColor: outOfStock ? '#1A1D27' : 'var(--gold)',
+                  color: outOfStock ? '#4A4640' : '#0A0B0F',
+                  cursor: outOfStock ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {cartLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShoppingCart className="h-3.5 w-3.5" />}
+                <span className="hidden sm:inline">
+                  {outOfStock ? "Tükendi" : "Sepete Ekle"}
+                </span>
+              </button>
             </div>
           </div>
         </div>
@@ -139,91 +179,134 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
 
   // Grid mode
   return (
-    <div className="group flex flex-col overflow-hidden rounded-xl border bg-card transition-all hover:shadow-lg">
+    <div
+      className="group flex flex-col overflow-hidden rounded-2xl transition-all duration-300"
+      style={{ backgroundColor: '#12141A', border: '1px solid rgba(255,102,0,0.12)' }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,102,0,0.35)'
+        ;(e.currentTarget as HTMLElement).style.boxShadow = '0 8px 40px rgba(255,102,0,0.08)'
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,102,0,0.12)'
+        ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
+      }}
+    >
       {/* Image */}
-      <Link
-        href={`/urun/${product.slug}`}
-        className="relative aspect-square overflow-hidden bg-gray-100"
-      >
+      <Link href={`/urun/${product.slug}`} className="relative aspect-square overflow-hidden" style={{ backgroundColor: '#1A1D27' }}>
         {image ? (
           <Image
             src={image.url}
             alt={image.altText || product.name}
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             loading="lazy"
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <ImageIcon className="h-12 w-12 text-gray-300" />
+            <ImageIcon className="h-12 w-12" style={{ color: '#2A2A35' }} />
           </div>
         )}
 
+        {/* Overlay on hover */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ backgroundColor: 'rgba(10,11,15,0.35)' }}>
+          <span className="rounded-full px-5 py-2 text-xs font-bold uppercase tracking-widest backdrop-blur-sm" style={{ backgroundColor: 'rgba(255,102,0,0.9)', color: '#0A0B0F' }}>
+            İncele
+          </span>
+        </div>
+
         {/* Badges */}
-        <div className="absolute left-2 top-2 flex flex-col gap-1">
-          {product.isNew && (
-            <span className="rounded-md bg-blue-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
+        <div className="absolute left-2.5 top-2.5 flex flex-col gap-1">
+          {product.isBestSeller && (
+            <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ backgroundColor: 'var(--gold)', color: '#0A0B0F' }}>
+              <Zap className="h-2.5 w-2.5" /> Çok Satan
+            </span>
+          )}
+          {product.isNew && !product.isBestSeller && (
+            <span className="rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ backgroundColor: 'rgba(255,102,0,0.15)', color: 'var(--gold)', border: '1px solid rgba(255,102,0,0.3)' }}>
               Yeni
             </span>
           )}
           {hasDiscount && (
-            <span className="rounded-md bg-red-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
-              %{discountPercent} Indirim
+            <span className="rounded-md px-2 py-0.5 text-[10px] font-bold text-white" style={{ backgroundColor: '#7C1D1D' }}>
+              %{discountPercent} İndirim
             </span>
           )}
           {outOfStock && (
-            <span className="rounded-md bg-gray-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
-              Tukendi
+            <span className="rounded-md bg-zinc-800/90 px-2 py-0.5 text-[10px] font-semibold text-zinc-400 backdrop-blur-sm">
+              Tükendi
             </span>
           )}
         </div>
 
-        {/* Favorite button */}
+        {/* Favorite */}
         <button
-          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-gray-600 opacity-0 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:text-red-500 group-hover:opacity-100"
+          className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-xl opacity-0 backdrop-blur-sm transition-all duration-200 group-hover:opacity-100"
+          style={{ backgroundColor: 'rgba(10,11,15,0.7)', border: '1px solid rgba(255,102,0,0.2)', color: '#6B6560' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#EF4444'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(239,68,68,0.3)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#6B6560'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,102,0,0.2)' }}
           aria-label="Favorilere ekle"
         >
-          <Heart className="h-4 w-4" />
+          <Heart className="h-3.5 w-3.5" />
         </button>
       </Link>
 
       {/* Content */}
-      <div className="flex flex-1 flex-col p-3">
+      <div className="flex flex-1 flex-col p-4">
         {product.brand && (
-          <p className="text-xs text-muted-foreground">{product.brand.name}</p>
+          <p className="mb-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--gold-dim)' }}>
+            {product.brand.name}
+          </p>
         )}
         <Link href={`/urun/${product.slug}`}>
-          <h3 className="mt-0.5 line-clamp-2 text-sm font-medium text-foreground transition-colors hover:text-blue-600">
+          <h3 className="line-clamp-2 text-sm font-medium leading-snug transition-colors" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: '#D4CFC8', fontSize: '0.95rem' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--gold-light)')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#D4CFC8')}
+          >
             {product.name}
           </h3>
         </Link>
 
-        <div className="mt-auto pt-2">
-          {/* Price */}
-          <div className="flex items-center gap-2">
+        <div className="mt-auto pt-4">
+          <div className="flex items-baseline gap-2 mb-3">
+            <span className="text-2xl font-semibold leading-none" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: 'var(--gold)' }}>
+              {displayPriceTl.toFixed(2)} ₺
+            </span>
             {hasDiscount && (
-              <span className="text-sm text-muted-foreground line-through">
-                ${product.priceUsd.toFixed(2)}
+              <span className="text-xs line-through" style={{ color: '#4A4640' }}>
+                {(product.priceUsd * rate).toFixed(2)} ₺
               </span>
             )}
-            <span className={cn("text-lg font-bold", hasDiscount ? "text-red-600" : "text-foreground")}>
-              ${displayPriceUsd.toFixed(2)}
-            </span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            {displayPriceTl.toFixed(2)} TL
-          </p>
 
-          {/* Add to cart */}
-          <Button
-            className="mt-2 w-full"
-            size="sm"
-            disabled={outOfStock}
+          <button
+            className={cn(
+              "flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 active:scale-[0.97]"
+            )}
+            style={{
+              backgroundColor: outOfStock ? '#1A1D27' : '#1E1A12',
+              color: outOfStock ? '#4A4640' : 'var(--gold)',
+              border: outOfStock ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(255,102,0,0.25)',
+              cursor: outOfStock ? 'not-allowed' : 'pointer',
+            }}
+            disabled={outOfStock || cartLoading}
+            onClick={handleAddToCart}
+            onMouseEnter={e => {
+              if (!outOfStock) {
+                ;(e.currentTarget as HTMLElement).style.backgroundColor = 'var(--gold)'
+                ;(e.currentTarget as HTMLElement).style.color = '#0A0B0F'
+              }
+            }}
+            onMouseLeave={e => {
+              if (!outOfStock) {
+                ;(e.currentTarget as HTMLElement).style.backgroundColor = '#1E1A12'
+                ;(e.currentTarget as HTMLElement).style.color = 'var(--gold)'
+              }
+            }}
           >
-            <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
+            {cartLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
             {outOfStock ? "Stokta Yok" : "Sepete Ekle"}
-          </Button>
+          </button>
         </div>
       </div>
     </div>

@@ -43,7 +43,7 @@ export async function PUT(
 
     const category = await db.category.update({
       where: { id },
-      data: { ...data, slug },
+      data: { ...data, slug, parentId: data.parentId || null },
     })
     return NextResponse.json(category)
   } catch (error: unknown) {

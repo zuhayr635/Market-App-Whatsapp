@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (existing) slug = `${slug}-${Date.now()}`
 
     const category = await db.category.create({
-      data: { ...data, slug },
+      data: { ...data, slug, parentId: data.parentId || null },
     })
     return NextResponse.json(category, { status: 201 })
   } catch (error: unknown) {

@@ -8,6 +8,10 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Giriş yapmalısınız" }, { status: 401 })
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((session.user as any).type === "admin") {
+    return NextResponse.json({ items: [], totalUsd: 0, totalTl: 0 })
+  }
 
   const cart = await db.cart.findUnique({
     where: { userId: session.user.id },
@@ -82,60 +86,70 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Giriş yapmalısınız" }, { status: 401 })
   }
-
-  const body = await req.json()
-  const { productId, variationId, quantity = 1 } = body
-
-  if (!productId) {
-    return NextResponse.json({ error: "Ürün ID gerekli" }, { status: 400 })
+  // Admin users don't have a cart in the users table
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((session.user as any).type === "admin") {
+    return NextResponse.json({ error: "Admin kullanıcılar sepet kullanamaz" }, { status: 403 })
   }
 
-  // Validate product exists and is published
-  const product = await db.product.findUnique({
-    where: { id: productId, status: "PUBLISHED" },
-  })
+  try {
+    const body = await req.json()
+    const { productId, variationId, quantity = 1 } = body
 
-  if (!product) {
-    return NextResponse.json({ error: "Ürün bulunamadı" }, { status: 404 })
-  }
+    if (!productId) {
+      return NextResponse.json({ error: "Ürün ID gerekli" }, { status: 400 })
+    }
 
-  // Get or create cart
-  let cart = await db.cart.findUnique({ where: { userId: session.user.id } })
-  if (!cart) {
-    cart = await db.cart.create({ data: { userId: session.user.id } })
-  }
-
-  // Check if item already in cart
-  const existingItem = await db.cartItem.findFirst({
-    where: {
-      cartId: cart.id,
-      productId,
-      variationId: variationId || null,
-    },
-  })
-
-  const unitPrice = product.salePriceUsd ?? product.priceUsd
-
-  if (existingItem) {
-    await db.cartItem.update({
-      where: { id: existingItem.id },
-      data: { quantity: existingItem.quantity + quantity },
+    // Validate product exists and is published
+    const product = await db.product.findUnique({
+      where: { id: productId, status: "PUBLISHED" },
     })
-  } else {
-    await db.cartItem.create({
-      data: {
+
+    if (!product) {
+      return NextResponse.json({ error: "Ürün bulunamadı" }, { status: 404 })
+    }
+
+    // Get or create cart
+    let cart = await db.cart.findUnique({ where: { userId: session.user.id } })
+    if (!cart) {
+      cart = await db.cart.create({ data: { userId: session.user.id } })
+    }
+
+    // Check if item already in cart
+    const existingItem = await db.cartItem.findFirst({
+      where: {
         cartId: cart.id,
         productId,
         variationId: variationId || null,
-        quantity,
-        unitPrice,
       },
     })
-  }
 
-  // Return updated cart count
-  const count = await db.cartItem.count({ where: { cartId: cart.id } })
-  return NextResponse.json({ success: true, cartItemCount: count })
+    const unitPrice = product.salePriceUsd ?? product.priceUsd
+
+    if (existingItem) {
+      await db.cartItem.update({
+        where: { id: existingItem.id },
+        data: { quantity: existingItem.quantity + quantity },
+      })
+    } else {
+      await db.cartItem.create({
+        data: {
+          cartId: cart.id,
+          productId,
+          variationId: variationId || null,
+          quantity,
+          unitPrice,
+        },
+      })
+    }
+
+    // Return updated cart count
+    const count = await db.cartItem.count({ where: { cartId: cart.id } })
+    return NextResponse.json({ success: true, cartItemCount: count })
+  } catch (error) {
+    console.error("Cart POST error:", error)
+    return NextResponse.json({ error: "Sepete eklenirken bir hata oluştu" }, { status: 500 })
+  }
 }
 
 // PUT: update item quantity

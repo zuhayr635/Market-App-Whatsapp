@@ -109,7 +109,7 @@ export default function SiparislerimPage() {
                     >
                       {st.label}
                     </Badge>
-                    <p className="font-bold">${order.totalUsd.toFixed(2)}</p>
+                    <p className="font-bold">{order.totalTl.toFixed(2)} ₺</p>
                     <Link href={`/siparislerim/${order.id}`}>
                       <Button size="sm" variant="outline" className="gap-1">
                         Detay

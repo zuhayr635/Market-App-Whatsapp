@@ -172,15 +172,12 @@ export default function OdemePage() {
                 {item.variationJson && ` (${Object.values(item.variationJson).join(", ")})`}
                 {" "}x{item.quantity}
               </span>
-              <span>${item.totalPrice.toFixed(2)}</span>
+              <span>{(Number(item.totalPrice) * order.totalTl / order.totalUsd).toFixed(2)} ₺</span>
             </div>
           ))}
           <div className="border-t pt-2 font-bold flex justify-between">
             <span>Toplam</span>
-            <div className="text-right">
-              <div>${order.totalUsd.toFixed(2)}</div>
-              <div className="text-xs font-normal text-muted-foreground">{order.totalTl.toFixed(2)} ₺</div>
-            </div>
+            <span>{order.totalTl.toFixed(2)} ₺</span>
           </div>
         </div>
       </div>

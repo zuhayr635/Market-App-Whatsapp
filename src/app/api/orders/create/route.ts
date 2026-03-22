@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { addressId, orderNote, addressText } = body
+  const { addressId, orderNote, addressText, couponCode, discountAmount } = body
 
   // Get cart with items
   const cart = await db.cart.findUnique({
@@ -122,14 +122,18 @@ export async function POST(req: NextRequest) {
 
   const orderNo = generateOrderNo()
 
-  // Create order in a transaction
+  // Apply coupon discount to TL total
+  const discount = discountAmount ? Number(discountAmount) : 0
+  const finalTotalTl = Math.max(0, totalTl - discount)
+
+  // Create order
   const order = await db.order.create({
     data: {
       orderNo,
       userId: session.user.id,
       status: "PENDING",
       totalUsd,
-      totalTl,
+      totalTl: finalTotalTl,
       addressJson: addressJson || undefined,
       orderNote: orderNote || null,
       items: {
@@ -143,6 +147,14 @@ export async function POST(req: NextRequest) {
       },
     },
   })
+
+  // Increment coupon usedCount
+  if (couponCode) {
+    await db.coupon.updateMany({
+      where: { code: couponCode.toUpperCase() },
+      data: { usedCount: { increment: 1 } },
+    }).catch(() => {})
+  }
 
   // Clear cart
   await db.cartItem.deleteMany({ where: { cartId: cart.id } })
@@ -159,10 +171,11 @@ export async function POST(req: NextRequest) {
   const message = buildWhatsAppMessage(
     cartItemsForMsg,
     totalUsd,
-    totalTl,
+    finalTotalTl,
     addressText,
     orderNote,
-    orderNo
+    orderNo,
+    couponCode ? { code: couponCode, discount } : undefined,
   )
 
   // Get WhatsApp number from settings or use default
