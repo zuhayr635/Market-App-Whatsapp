@@ -1,26 +1,46 @@
+import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import { Breadcrumb } from "@/components/store/breadcrumb"
 import { ProductCard, type ProductCardData } from "@/components/store/product-card"
 import { ProductDetailClient } from "./product-detail-client"
+import { getSiteSettings, buildMetadata } from "@/lib/seo"
 
 interface Props {
   params: { slug: string }
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await db.product.findUnique({
     where: { slug: params.slug, status: "PUBLISHED" },
-    select: { name: true, shortDesc: true, seoTitle: true, seoDesc: true },
-  })
+    select: {
+      name: true,
+      shortDesc: true,
+      seoTitle: true,
+      seoDesc: true,
+      images: {
+        take: 1,
+        orderBy: [{ isFeatured: "desc" }, { sortOrder: "asc" }],
+        select: { url: true, altText: true },
+      },
+    },
+  }).catch(() => null)
 
   if (!product) return { title: "Ürün Bulunamadı" }
 
-  return {
-    title: product.seoTitle || product.name,
-    description: product.seoDesc || product.shortDesc || "",
-  }
+  const { siteName } = await getSiteSettings()
+  const title = product.seoTitle || product.name
+  const description = product.seoDesc || product.shortDesc || ""
+  const image = product.images[0]?.url
+
+  return buildMetadata({
+    title,
+    description,
+    path: `/urun/${params.slug}`,
+    image,
+    siteName,
+  })
 }
 
 export default async function ProductDetailPage({ params }: Props) {

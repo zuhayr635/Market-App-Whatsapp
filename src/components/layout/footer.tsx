@@ -82,8 +82,11 @@ export function Footer() {
               <Link href="/kvkk" className="text-sm opacity-80 transition-opacity hover:opacity-100">
                 KVKK
               </Link>
-              <Link href="/gizlilik-politikasi" className="text-sm opacity-80 transition-opacity hover:opacity-100">
+              <Link href="/gizlilik" className="text-sm opacity-80 transition-opacity hover:opacity-100">
                 Gizlilik Politikası
+              </Link>
+              <Link href="/kullanim-kosullari" className="text-sm opacity-80 transition-opacity hover:opacity-100">
+                Kullanım Koşulları
               </Link>
             </nav>
           </div>
