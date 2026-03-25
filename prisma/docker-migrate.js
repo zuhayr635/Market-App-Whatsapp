@@ -52,7 +52,11 @@ async function main() {
     const statements = sql
       .split(';')
       .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+      .filter(s => {
+        // Remove comment-only lines and check if there's actual SQL
+        const withoutComments = s.replace(/--.*$/gm, '').trim();
+        return withoutComments.length > 0;
+      });
 
     const id = require('crypto').randomUUID();
     const startedAt = new Date();
