@@ -46,16 +46,18 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Prisma için schema + migration + binary + generated client
+# Prisma için schema + migration + binary + generated client + CLI
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/src/generated ./src/generated
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/.bin
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
 USER nextjs
 EXPOSE 3000
 
-# Başlangıç: migrate → başlat (seed ilk kez otomatik, sonraki çalışmalarda atlanır)
-CMD ["sh", "-c", "node node_modules/.bin/prisma migrate deploy && node prisma/docker-seed.js && node server.js"]
+# Başlangıç: migrate → seed → server (migrate/seed hataları app'i durdurmaz)
+CMD ["sh", "-c", "echo 'Running migrations...' && node node_modules/prisma/build/index.js migrate deploy 2>&1 && echo 'Running seed...' && node prisma/docker-seed.js 2>&1 || echo 'Seed warning (non-fatal)' && echo 'Starting server...' && exec node server.js"]
