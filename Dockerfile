@@ -53,10 +53,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modul
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
-# Prisma CLI v6.19.2 with all deps
-RUN npm install prisma@6.19.2 --no-save --legacy-peer-deps
-
 USER nextjs
 EXPOSE 3000
 
-CMD ["sh", "-c", "echo '=== Migrations ===' && node node_modules/prisma/build/index.js migrate deploy 2>&1 || echo 'Migration warning'; echo '=== Seed ===' && node prisma/docker-seed.js 2>&1 || echo 'Seed skipped'; echo '=== Server ===' && exec node server.js"]
+CMD ["sh", "-c", "echo '=== Migrations ===' && node prisma/docker-migrate.js 2>&1 || echo 'Migration warning'; echo '=== Seed ===' && node prisma/docker-seed.js 2>&1 || echo 'Seed skipped'; echo '=== Server ===' && exec node server.js"]
