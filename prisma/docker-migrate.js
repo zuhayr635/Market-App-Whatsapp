@@ -7,6 +7,14 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Running manual migrations...');
 
+  // Check if tables exist - if not, reset migration tracking
+  try {
+    await prisma.$queryRawUnsafe('SELECT 1 FROM users LIMIT 1');
+  } catch {
+    console.log('  Tables missing, resetting migration tracking...');
+    await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS _prisma_migrations');
+  }
+
   // Create migrations tracking table if not exists
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS _prisma_migrations (
