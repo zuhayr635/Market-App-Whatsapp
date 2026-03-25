@@ -6,7 +6,6 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat
 
 COPY package.json package-lock.json ./
-# npm cache mount: tekrar build'de npm indirmez, çok hızlandırır
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --prefer-offline --legacy-peer-deps
 
@@ -46,21 +45,18 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Prisma CLI + client + migration deps
+# Prisma schema + migrations + generated client
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/src/generated ./src/generated
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/effect ./node_modules/effect
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/fast-check ./node_modules/fast-check
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/.bin
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+
+# Prisma CLI with all deps (effect, fast-check, pure-rand chain)
+RUN npm install prisma@6.19 --no-save 2>/dev/null || true
 
 USER nextjs
 EXPOSE 3000
 
-# Startup script: migrate → seed → server
-COPY --from=builder --chown=nextjs:nodejs /app/prisma/docker-seed.js ./prisma/docker-seed.js
-CMD ["sh", "-c", "echo '=== Running migrations ===' && node node_modules/prisma/build/index.js migrate deploy 2>&1 || echo 'Migration failed (may be first run)'; echo '=== Running seed ===' && node prisma/docker-seed.js 2>&1 || echo 'Seed skipped'; echo '=== Starting server ===' && exec node server.js"]
+CMD ["sh", "-c", "echo '=== Migrations ===' && npx prisma migrate deploy 2>&1 || echo 'Migration warning'; echo '=== Seed ===' && node prisma/docker-seed.js 2>&1 || echo 'Seed skipped'; echo '=== Server ===' && exec node server.js"]
