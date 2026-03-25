@@ -316,7 +316,7 @@ function CategoryPageContent() {
                 <p className="text-sm font-medium text-foreground group-hover:text-blue-600 transition-colors">
                   {sub.name}
                 </p>
-                <p className="text-xs text-muted-foreground">{sub._count.products} urun</p>
+                <p className="text-xs text-muted-foreground">{sub._count.products} ürün</p>
               </div>
             </Link>
           ))}
@@ -354,7 +354,7 @@ function CategoryPageContent() {
               </Sheet>
 
               <span className="text-sm text-muted-foreground">
-                {loading ? "Yukleniyor..." : `${total} urun bulundu`}
+                {loading ? "Yükleniyor..." : `${total} ürün bulundu`}
               </span>
             </div>
 
@@ -385,9 +385,9 @@ function CategoryPageContent() {
           ) : products.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <PackageSearch className="mb-4 h-16 w-16 text-muted-foreground/50" />
-              <h2 className="text-lg font-semibold text-foreground">Urun bulunamadi</h2>
+              <h2 className="text-lg font-semibold text-foreground">Ürün bulunamadı</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Bu kategoride henuz urun bulunmuyor.
+                Bu kategoride henüz ürün bulunmuyor.
               </p>
               <Button variant="outline" className="mt-4" onClick={handleClearFilters}>
                 Filtreleri Temizle

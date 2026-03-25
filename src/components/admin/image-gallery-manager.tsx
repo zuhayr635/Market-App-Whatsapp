@@ -119,7 +119,7 @@ export function ImageGalleryManager({
         return null
       }
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(`${file.name}: Dosya boyutu 5MB'dan buyuk`)
+        toast.error(`${file.name}: Dosya boyutu 5MB'dan büyük`)
         return null
       }
 
@@ -133,12 +133,12 @@ export function ImageGalleryManager({
         })
         if (!res.ok) {
           const err = await res.json()
-          toast.error(err.error || "Yukleme hatasi")
+          toast.error(err.error || "Yükleme hatası")
           return null
         }
         return await res.json()
       } catch {
-        toast.error(`${file.name}: Yukleme basarisiz`)
+        toast.error(`${file.name}: Yükleme başarısız`)
         return null
       }
     },
@@ -151,13 +151,13 @@ export function ImageGalleryManager({
       const fileArray = Array.from(files)
       const remaining = MAX_IMAGES - images.length
       if (remaining <= 0) {
-        toast.error(`En fazla ${MAX_IMAGES} gorsel yuklenebilir`)
+        toast.error(`En fazla ${MAX_IMAGES} görsel yüklenebilir`)
         return
       }
       const toUpload = fileArray.slice(0, remaining)
       if (fileArray.length > remaining) {
         toast.error(
-          `${fileArray.length - remaining} gorsel limit nedeniyle atildi`
+          `${fileArray.length - remaining} görsel limit nedeniyle atıldı`
         )
       }
 
@@ -204,7 +204,7 @@ export function ImageGalleryManager({
                 setImages((prev) => [...prev, saved])
               }
             } catch {
-              toast.error("Gorsel kaydedilemedi")
+              toast.error("Görsel kaydedilemedi")
             }
           } else {
             // Create mode — store as pending
@@ -289,7 +289,7 @@ export function ImageGalleryManager({
             body: JSON.stringify({ images: allImages }),
           })
         } catch {
-          toast.error("Guncellenemedi")
+          toast.error("Güncellenemedi")
         }
       }
     },
@@ -306,11 +306,11 @@ export function ImageGalleryManager({
             { method: "DELETE" }
           )
           if (!res.ok) {
-            toast.error("Gorsel silinemedi")
+            toast.error("Görsel silinemedi")
             return
           }
         } catch {
-          toast.error("Gorsel silinemedi")
+          toast.error("Görsel silinemedi")
           return
         }
       }
@@ -325,7 +325,7 @@ export function ImageGalleryManager({
       })
       setDeleteConfirm(null)
       setDetailImage(null)
-      toast.success("Gorsel silindi")
+      toast.success("Görsel silindi")
     },
     [productId]
   )
@@ -385,7 +385,7 @@ export function ImageGalleryManager({
             body: JSON.stringify({ images: updates }),
           })
         } catch {
-          toast.error("Siralama kaydedilemedi")
+          toast.error("Sıralama kaydedilemedi")
         } finally {
           setSaving(false)
         }
@@ -429,9 +429,9 @@ export function ImageGalleryManager({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ images: allImages }),
       })
-      toast.success("Gorsel bilgileri guncellendi")
+      toast.success("Görsel bilgileri güncellendi")
     } catch {
-      toast.error("Guncellenemedi")
+      toast.error("Güncellenemedi")
     } finally {
       setSaving(false)
     }
@@ -446,9 +446,9 @@ export function ImageGalleryManager({
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Urun Gorselleri</CardTitle>
+          <CardTitle>Ürün Görselleri</CardTitle>
           <span className="text-sm text-muted-foreground">
-            {images.length}/{MAX_IMAGES} gorsel
+            {images.length}/{MAX_IMAGES} görsel
           </span>
         </div>
       </CardHeader>
@@ -460,11 +460,11 @@ export function ImageGalleryManager({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={featuredImage.url}
-                alt={featuredImage.altText || "Ana gorsel"}
+                alt={featuredImage.altText || "Ana görsel"}
                 className="w-full h-full object-contain"
               />
               <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                Ana Gorsel
+                Ana Görsel
               </div>
             </div>
           </div>
@@ -496,10 +496,10 @@ export function ImageGalleryManager({
             />
             <Upload className="size-8 mx-auto text-muted-foreground mb-2" />
             <p className="text-sm font-medium">
-              Gorselleri surukleyin veya tiklayin
+              Görselleri sürükleyin veya tıklayın
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              JPG, PNG, WEBP, GIF - Maks. 5MB - En fazla {MAX_IMAGES} gorsel
+              JPG, PNG, WEBP, GIF - Maks. 5MB - En fazla {MAX_IMAGES} görsel
             </p>
           </div>
         )}
@@ -546,7 +546,7 @@ export function ImageGalleryManager({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={img.url}
-                  alt={img.altText || "Urun gorseli"}
+                  alt={img.altText || "Ürün görseli"}
                   className="w-full h-full object-cover"
                 />
 
@@ -570,7 +570,7 @@ export function ImageGalleryManager({
                       : "opacity-0 group-hover:opacity-100"
                   }`}
                   title={
-                    img.isFeatured ? "Ana gorsel" : "Ana gorsel yap"
+                    img.isFeatured ? "Ana görsel" : "Ana görsel yap"
                   }
                 >
                   <Star
@@ -616,7 +616,7 @@ export function ImageGalleryManager({
         {images.length === 0 && !uploading && (
           <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
             <ImageIcon className="size-12 mb-2 opacity-40" />
-            <p className="text-sm">Henuz gorsel eklenmemis</p>
+            <p className="text-sm">Henüz görsel eklenmemiş</p>
           </div>
         )}
 
@@ -636,9 +636,9 @@ export function ImageGalleryManager({
           {detailImage && (
             <DialogContent className="sm:max-w-lg">
               <DialogHeader>
-                <DialogTitle>Gorsel Detaylari</DialogTitle>
+                <DialogTitle>Görsel Detayları</DialogTitle>
                 <DialogDescription>
-                  Gorsel bilgilerini duzenleyin
+                  Görsel bilgilerini düzenleyin
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -646,7 +646,7 @@ export function ImageGalleryManager({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={detailImage.url}
-                    alt={detailImage.altText || "Gorsel"}
+                    alt={detailImage.altText || "Görsel"}
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -664,12 +664,12 @@ export function ImageGalleryManager({
                           e.target.value
                         )
                       }
-                      placeholder="Gorsel aciklamasi (SEO icin onemli)"
+                      placeholder="Görsel açıklaması (SEO için önemli)"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="img-title">Baslik</Label>
+                    <Label htmlFor="img-title">Başlık</Label>
                     <Input
                       id="img-title"
                       value={detailImage.title || ""}
@@ -680,12 +680,12 @@ export function ImageGalleryManager({
                           e.target.value
                         )
                       }
-                      placeholder="Gorsel basligi"
+                      placeholder="Görsel başlığı"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="img-desc">Aciklama</Label>
+                    <Label htmlFor="img-desc">Açıklama</Label>
                     <Textarea
                       id="img-desc"
                       value={detailImage.description || ""}
@@ -696,7 +696,7 @@ export function ImageGalleryManager({
                           e.target.value
                         )
                       }
-                      placeholder="Gorsel aciklamasi"
+                      placeholder="Görsel açıklaması"
                       rows={3}
                     />
                   </div>
@@ -710,15 +710,15 @@ export function ImageGalleryManager({
                   onClick={() => {
                     if (!detailImage.isFeatured) {
                       setFeatured(detailImage)
-                      toast.success("Ana gorsel degistirildi")
+                      toast.success("Ana görsel değiştirildi")
                     }
                   }}
                   disabled={detailImage.isFeatured}
                 >
                   <Star className="size-4 mr-1.5" />
                   {detailImage.isFeatured
-                    ? "Zaten Ana Gorsel"
-                    : "Ana Gorsel Yap"}
+                    ? "Zaten Ana Görsel"
+                    : "Ana Görsel Yap"}
                 </Button>
                 <Button
                   type="button"
@@ -755,10 +755,10 @@ export function ImageGalleryManager({
           {deleteConfirm && (
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Gorseli Sil</DialogTitle>
+                <DialogTitle>Görseli Sil</DialogTitle>
                 <DialogDescription>
-                  Bu gorseli silmek istediginizden emin misiniz? Bu islem geri
-                  alinamaz.
+                  Bu görseli silmek istediğinizden emin misiniz? Bu işlem geri
+                  alınamaz.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
@@ -767,7 +767,7 @@ export function ImageGalleryManager({
                   variant="outline"
                   onClick={() => setDeleteConfirm(null)}
                 >
-                  Iptal
+                  İptal
                 </Button>
                 <Button
                   type="button"

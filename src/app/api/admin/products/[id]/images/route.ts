@@ -17,7 +17,7 @@ export async function GET(
     return NextResponse.json(images)
   } catch {
     return NextResponse.json(
-      { error: "Gorseller yuklenirken hata olustu" },
+      { error: "Görseller yüklenirken hata oluştu" },
       { status: 500 }
     )
   }
@@ -67,7 +67,7 @@ export async function POST(
     return NextResponse.json(image)
   } catch {
     return NextResponse.json(
-      { error: "Gorsel eklenirken hata olustu" },
+      { error: "Görsel eklenirken hata oluştu" },
       { status: 500 }
     )
   }
@@ -123,7 +123,7 @@ export async function PUT(
     return NextResponse.json(updated)
   } catch {
     return NextResponse.json(
-      { error: "Gorseller guncellenirken hata olustu" },
+      { error: "Görseller güncellenirken hata oluştu" },
       { status: 500 }
     )
   }
@@ -152,7 +152,7 @@ export async function DELETE(
 
     if (!image) {
       return NextResponse.json(
-        { error: "Gorsel bulunamadi" },
+        { error: "Görsel bulunamadı" },
         { status: 404 }
       )
     }
@@ -185,7 +185,7 @@ export async function DELETE(
     return NextResponse.json({ success: true })
   } catch {
     return NextResponse.json(
-      { error: "Gorsel silinirken hata olustu" },
+      { error: "Görsel silinirken hata oluştu" },
       { status: 500 }
     )
   }

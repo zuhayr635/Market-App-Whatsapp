@@ -236,7 +236,7 @@ function ProductsPageContent() {
               </Sheet>
 
               <span className="text-sm text-muted-foreground">
-                {loading ? "Yukleniyor..." : `${total} urun bulundu`}
+                {loading ? "Yükleniyor..." : `${total} ürün bulundu`}
               </span>
             </div>
 
@@ -267,7 +267,7 @@ function ProductsPageContent() {
           ) : products.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <PackageSearch className="mb-4 h-16 w-16 text-muted-foreground/50" />
-              <h2 className="text-lg font-semibold text-foreground">Urun bulunamadi</h2>
+              <h2 className="text-lg font-semibold text-foreground">Ürün bulunamadı</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Filtrelerinizi degistirmeyi veya arama terimini guncellemeyi deneyin.
               </p>

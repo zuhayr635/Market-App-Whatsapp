@@ -47,11 +47,11 @@ export function LoginForm() {
 
       if (result?.error) {
         if (result.error.includes("ACCOUNT_LOCKED")) {
-          toast.error("Hesabiniz gecici olarak kilitlendi. Lutfen 15 dakika sonra tekrar deneyiniz.")
+          toast.error("Hesabınız geçici olarak kilitlendi. Lütfen 15 dakika sonra tekrar deneyiniz.")
         } else if (result.error.includes("ACCOUNT_BANNED")) {
-          toast.error("Hesabiniz yasaklanmistir. Lutfen destek ile iletisime geciniz.")
+          toast.error("Hesabınız yasaklanmıştır. Lütfen destek ile iletişime geçiniz.")
         } else if (result.error.includes("ACCOUNT_INACTIVE")) {
-          toast.error("Hesabiniz aktif degil. Lutfen destek ile iletisime geciniz.")
+          toast.error("Hesabınız aktif değil. Lütfen destek ile iletişime geçiniz.")
         } else {
           toast.error("E-posta veya sifre hatali.")
         }
@@ -62,7 +62,7 @@ export function LoginForm() {
       router.push("/")
       router.refresh()
     } catch {
-      toast.error("Bir hata olustu. Lutfen tekrar deneyiniz.")
+      toast.error("Bir hata oluştu. Lütfen tekrar deneyiniz.")
     } finally {
       setIsLoading(false)
     }
@@ -72,7 +72,7 @@ export function LoginForm() {
     <Card className="w-full max-w-md shadow-lg">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">Giris Yap</CardTitle>
-        <CardDescription>Hesabiniza giris yapin</CardDescription>
+        <CardDescription>Hesabınıza giriş yapın</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -93,7 +93,7 @@ export function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Sifre</Label>
+            <Label htmlFor="password">Şifre</Label>
             <Input
               id="password"
               type="password"

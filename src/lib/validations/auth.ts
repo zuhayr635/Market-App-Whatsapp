@@ -1,30 +1,30 @@
 import { z } from "zod"
 
 export const loginSchema = z.object({
-  email: z.string().email("Gecerli bir e-posta adresi giriniz"),
-  password: z.string().min(1, "Sifre zorunludur"),
+  email: z.string().email("Geçerli bir e-posta adresi giriniz"),
+  password: z.string().min(1, "Şifre zorunludur"),
 })
 
 export const registerSchema = z.object({
-  name: z.string().min(2, "Ad en az 2 karakter olmali"),
-  surname: z.string().min(2, "Soyad en az 2 karakter olmali"),
-  email: z.string().email("Gecerli bir e-posta adresi giriniz"),
-  phone: z.string().min(10, "Gecerli bir telefon numarasi giriniz"),
-  cityId: z.string().min(1, "Sehir secimi zorunludur"),
-  districtId: z.string().min(1, "Ilce secimi zorunludur"),
-  address: z.string().min(10, "Adres en az 10 karakter olmali"),
+  name: z.string().min(2, "Ad en az 2 karakter olmalı"),
+  surname: z.string().min(2, "Soyad en az 2 karakter olmalı"),
+  email: z.string().email("Geçerli bir e-posta adresi giriniz"),
+  phone: z.string().min(10, "Geçerli bir telefon numarası giriniz"),
+  cityId: z.string().min(1, "Şehir seçimi zorunludur"),
+  districtId: z.string().min(1, "İlçe seçimi zorunludur"),
+  address: z.string().min(10, "Adres en az 10 karakter olmalı"),
   password: z
     .string()
-    .min(8, "Sifre en az 8 karakter olmali")
-    .regex(/[A-Z]/, "En az 1 buyuk harf icermeli")
-    .regex(/[0-9]/, "En az 1 rakam icermeli")
-    .regex(/[^A-Za-z0-9]/, "En az 1 ozel karakter icermeli"),
-  passwordConfirm: z.string(),
-  securityQuestion: z.string().min(1, "Guvenlik sorusu secimi zorunludur"),
-  securityAnswer: z.string().min(1, "Guvenlik cevabi zorunludur"),
-  kvkkConsent: z.literal(true, "KVKK onayi zorunludur"),
+    .min(8, "Şifre en az 8 karakter olmalı")
+    .regex(/[A-Z]/, "En az 1 büyük harf içermeli")
+    .regex(/[0-9]/, "En az 1 rakam içermeli")
+    .regex(/[^A-Za-z0-9]/, "En az 1 özel karakter içermeli"),
+  passwordConfirm: z.string().min(1, "Şifre tekrarı zorunludur"),
+  securityQuestion: z.string().optional().or(z.literal('')),
+  securityAnswer: z.string().optional().or(z.literal('')),
+  kvkkConsent: z.literal(true, "KVKK onayı zorunludur"),
 }).refine((data) => data.password === data.passwordConfirm, {
-  message: "Sifreler eslesmiyor",
+  message: "Şifreler eşleşmiyor",
   path: ["passwordConfirm"],
 })
 

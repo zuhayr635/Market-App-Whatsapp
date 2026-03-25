@@ -10,7 +10,7 @@ export async function POST(req: Request) {
 
     // Honeypot kontrolü — botlar bu alanı doldurur
     if (body._hp && body._hp.trim() !== "") {
-      return NextResponse.json({ message: "Gecersiz istek" }, { status: 400 })
+      return NextResponse.json({ message: "Geçersiz istek" }, { status: 400 })
     }
 
     // CAPTCHA doğrulama
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "CAPTCHA gerekli" }, { status: 400 })
     }
     if (!verifyCaptcha(captchaToken, captchaAnswer, captchaSig)) {
-      return NextResponse.json({ message: "CAPTCHA yanlis veya suresi dolmus" }, { status: 400 })
+      return NextResponse.json({ message: "CAPTCHA yanlış veya süresi dolmuş" }, { status: 400 })
     }
 
     const parsed = registerSchema.safeParse(body)
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
         fieldErrors[field].push(issue.message)
       }
       return NextResponse.json(
-        { message: "Gecersiz bilgiler", errors: fieldErrors },
+        { message: "Geçersiz bilgiler", errors: fieldErrors },
         { status: 400 }
       )
     }
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { message: "Bu e-posta adresi zaten kayitli" },
+        { message: "Bu e-posta adresi zaten kayıtlı" },
         { status: 409 }
       )
     }
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Register error:", error)
     return NextResponse.json(
-      { message: "Sunucu hatasi" },
+      { message: "Sunucu hatası" },
       { status: 500 }
     )
   }

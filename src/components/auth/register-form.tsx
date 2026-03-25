@@ -46,9 +46,9 @@ const SECURITY_QUESTIONS = [
 function PasswordStrengthIndicator({ password }: { password: string }) {
   const requirements = [
     { label: "En az 8 karakter", met: password.length >= 8 },
-    { label: "En az 1 buyuk harf", met: /[A-Z]/.test(password) },
+    { label: "En az 1 büyük harf", met: /[A-Z]/.test(password) },
     { label: "En az 1 rakam", met: /[0-9]/.test(password) },
-    { label: "En az 1 ozel karakter", met: /[^A-Za-z0-9]/.test(password) },
+    { label: "En az 1 özel karakter", met: /[^A-Za-z0-9]/.test(password) },
   ]
 
   const metCount = requirements.filter((r) => r.met).length
@@ -138,7 +138,7 @@ export function RegisterForm() {
     fetch("/api/cities")
       .then((res) => res.json())
       .then((data) => setCities(data))
-      .catch(() => toast.error("Sehirler yuklenirken hata olustu"))
+      .catch(() => toast.error("Şehirler yüklenirken hata oluştu"))
     fetchCaptcha()
   }, [fetchCaptcha])
 
@@ -151,7 +151,7 @@ export function RegisterForm() {
     fetch(`/api/cities/${cityId}/districts`)
       .then((res) => res.json())
       .then((data) => setDistricts(data))
-      .catch(() => toast.error("Ilceler yuklenirken hata olustu"))
+      .catch(() => toast.error("İlçeler yüklenirken hata oluştu"))
       .finally(() => setLoadingDistricts(false))
   }, [])
 
@@ -191,15 +191,15 @@ export function RegisterForm() {
 
       if (!res.ok) {
         if (res.status === 409) {
-          toast.error("Bu e-posta adresi zaten kayitli.")
+          toast.error("Bu e-posta adresi zaten kayıtlı.")
         } else if (result.message?.includes("CAPTCHA")) {
           setCaptchaError("Güvenlik kodu hatalı, lütfen tekrar deneyin")
           fetchCaptcha()
         } else if (result.errors) {
           const firstError = Object.values(result.errors)[0]
-          toast.error(Array.isArray(firstError) ? firstError[0] as string : "Gecersiz bilgiler.")
+          toast.error(Array.isArray(firstError) ? firstError[0] as string : "Geçersiz bilgiler.")
         } else {
-          toast.error(result.message || "Kayit sirasinda bir hata olustu.")
+          toast.error(result.message || "Kayıt sırasında bir hata oluştu.")
         }
         return
       }
@@ -207,7 +207,7 @@ export function RegisterForm() {
       toast.success("Kayit basarili! Giris yapabilirsiniz.")
       router.push("/giris")
     } catch {
-      toast.error("Bir hata olustu. Lutfen tekrar deneyiniz.")
+      toast.error("Bir hata oluştu. Lütfen tekrar deneyiniz.")
     } finally {
       setIsLoading(false)
     }
@@ -292,14 +292,14 @@ export function RegisterForm() {
           {/* City and District */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cityId">Sehir</Label>
+              <Label htmlFor="cityId">Şehir</Label>
               <select
                 id="cityId"
                 {...register("cityId")}
                 aria-invalid={!!errors.cityId}
                 className="flex h-10 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
               >
-                <option value="">Sehir seciniz</option>
+                <option value="">Şehir seçiniz</option>
                 {cities.map((city) => (
                   <option key={city.id} value={String(city.id)}>
                     {city.name}
@@ -311,7 +311,7 @@ export function RegisterForm() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="districtId">Ilce</Label>
+              <Label htmlFor="districtId">İlçe</Label>
               <select
                 id="districtId"
                 {...register("districtId")}
@@ -320,7 +320,7 @@ export function RegisterForm() {
                 className="flex h-10 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
               >
                 <option value="">
-                  {loadingDistricts ? "Yukleniyor..." : "Ilce seciniz"}
+                  {loadingDistricts ? "Yükleniyor..." : "İlçe seçiniz"}
                 </option>
                 {districts.map((district) => (
                   <option key={district.id} value={String(district.id)}>
@@ -350,7 +350,7 @@ export function RegisterForm() {
 
           {/* Password */}
           <div className="space-y-2">
-            <Label htmlFor="reg-password">Sifre</Label>
+            <Label htmlFor="reg-password">Şifre</Label>
             <Input
               id="reg-password"
               type="password"
@@ -368,7 +368,7 @@ export function RegisterForm() {
 
           {/* Password Confirm */}
           <div className="space-y-2">
-            <Label htmlFor="passwordConfirm">Sifre Tekrar</Label>
+            <Label htmlFor="passwordConfirm">Şifre Tekrar</Label>
             <Input
               id="passwordConfirm"
               type="password"
@@ -385,14 +385,14 @@ export function RegisterForm() {
 
           {/* Security Question */}
           <div className="space-y-2">
-            <Label htmlFor="securityQuestion">Guvenlik Sorusu</Label>
+            <Label htmlFor="securityQuestion">Güvenlik Sorusu</Label>
             <select
               id="securityQuestion"
               {...register("securityQuestion")}
               aria-invalid={!!errors.securityQuestion}
               className="flex h-10 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
             >
-              <option value="">Guvenlik sorusu seciniz</option>
+              <option value="">Güvenlik sorusu seçiniz</option>
               {SECURITY_QUESTIONS.map((q) => (
                 <option key={q} value={q}>
                   {q}
@@ -406,7 +406,7 @@ export function RegisterForm() {
 
           {/* Security Answer */}
           <div className="space-y-2">
-            <Label htmlFor="securityAnswer">Guvenlik Cevabi</Label>
+            <Label htmlFor="securityAnswer">Güvenlik Cevabı</Label>
             <Input
               id="securityAnswer"
               placeholder="Cevaninizi giriniz"

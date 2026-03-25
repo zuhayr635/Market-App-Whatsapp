@@ -3,7 +3,7 @@ import { LoginForm } from "@/components/auth/login-form"
 
 export const metadata: Metadata = {
   title: "Giris Yap | Market App",
-  description: "Hesabiniza giris yapin",
+  description: "Hesabınıza giriş yapın",
 }
 
 export default function LoginPage() {

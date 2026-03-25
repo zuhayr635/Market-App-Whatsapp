@@ -34,7 +34,7 @@ export function Pagination({ page, totalPages, total, limit, onPageChange }: Pag
   return (
     <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
       <p className="text-sm text-muted-foreground">
-        {start} - {end} arasi {total} urunden
+        {start} - {end} arası {total} üründen
       </p>
       <div className="flex items-center gap-1">
         <Button

@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
 
     if (!file) {
       return NextResponse.json(
-        { error: "Dosya bulunamadi" },
+        { error: "Dosya bulunamadı" },
         { status: 400 }
       )
     }
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: "Desteklenmeyen dosya formati. JPG, PNG, WEBP veya GIF yukleyin." },
+        { error: "Desteklenmeyen dosya formatı. JPG, PNG, WEBP veya GIF yükleyin." },
         { status: 400 }
       )
     }
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const maxSize = 5 * 1024 * 1024 // 5MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "Dosya boyutu 5MB'dan buyuk olamaz" },
+        { error: "Dosya boyutu 5MB'dan büyük olamaz" },
         { status: 400 }
       )
     }
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     })
   } catch {
     return NextResponse.json(
-      { error: "Dosya yuklenirken bir hata olustu" },
+      { error: "Dosya yüklenirken bir hata oluştu" },
       { status: 500 }
     )
   }
