@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { registerSchema } from "@/lib/validations/auth"
-import { verifyCaptcha } from "@/app/api/captcha/route"
+import { verifyCaptcha } from "@/lib/captcha"
 
 export async function POST(req: Request) {
   try {
