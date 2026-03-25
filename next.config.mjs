@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  basePath: '/cihanpolat',
   output: 'standalone',
   compress: true,
   poweredByHeader: false,
