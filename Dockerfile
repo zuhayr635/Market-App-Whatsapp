@@ -20,9 +20,10 @@ COPY . .
 # Prisma client oluştur
 RUN npx prisma generate
 
-# Next.js build
+# Next.js build (dummy DATABASE_URL for build-time Prisma client init)
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV DATABASE_URL="mysql://root:build@localhost:3306/market_db"
 RUN npm run build
 
 # ── Stage 3: Runner (minimal imaj) ────────────────────────────────────────────
