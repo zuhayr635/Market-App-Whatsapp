@@ -8,7 +8,7 @@ RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json ./
 # npm cache mount: tekrar build'de npm indirmez, çok hızlandırır
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --prefer-offline
+    npm ci --prefer-offline --legacy-peer-deps
 
 # ── Stage 2: Build ────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
