@@ -20,8 +20,8 @@ export const registerSchema = z.object({
     .regex(/[0-9]/, "En az 1 rakam içermeli")
     .regex(/[^A-Za-z0-9]/, "En az 1 özel karakter içermeli"),
   passwordConfirm: z.string({ required_error: "Şifre tekrarı zorunludur" }).min(1, "Şifre tekrarı zorunludur"),
-  securityQuestion: z.string().default(""),
-  securityAnswer: z.string().default(""),
+  securityQuestion: z.string(),
+  securityAnswer: z.string(),
   kvkkConsent: z.boolean().refine((val) => val === true, { message: "KVKK onayı zorunludur" }),
 }).refine((data) => data.password === data.passwordConfirm, {
   message: "Şifreler eşleşmiyor",
