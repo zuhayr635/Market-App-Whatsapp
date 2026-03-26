@@ -215,7 +215,7 @@ export function RegisterForm() {
         return
       }
 
-      toast.success("Kayit basarili! Giris yapabilirsiniz.")
+      toast.success("Kayıt başarılı! Giriş yapabilirsiniz.")
       router.push("/giris")
     } catch {
       toast.error("Bir hata oluştu. Lütfen tekrar deneyiniz.")
@@ -227,8 +227,8 @@ export function RegisterForm() {
   return (
     <Card className="w-full max-w-2xl shadow-lg">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Kayit Ol</CardTitle>
-        <CardDescription>Yeni bir hesap olusturun</CardDescription>
+        <CardTitle className="text-2xl font-bold">Kayıt Ol</CardTitle>
+        <CardDescription>Yeni bir hesap oluşturun</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -238,7 +238,7 @@ export function RegisterForm() {
               <Label htmlFor="name">Ad</Label>
               <Input
                 id="name"
-                placeholder="Adiniz"
+                placeholder="Adınız"
                 {...register("name")}
                 aria-invalid={!!errors.name}
                 className="h-10"
@@ -251,7 +251,7 @@ export function RegisterForm() {
               <Label htmlFor="surname">Soyad</Label>
               <Input
                 id="surname"
-                placeholder="Soyadiniz"
+                placeholder="Soyadınız"
                 {...register("surname")}
                 aria-invalid={!!errors.surname}
                 className="h-10"
@@ -350,7 +350,7 @@ export function RegisterForm() {
             <Label htmlFor="address">Adres</Label>
             <Textarea
               id="address"
-              placeholder="Acik adresinizi giriniz"
+              placeholder="Açık adresinizi giriniz"
               {...register("address")}
               aria-invalid={!!errors.address}
             />
@@ -420,7 +420,7 @@ export function RegisterForm() {
             <Label htmlFor="securityAnswer">Güvenlik Cevabı</Label>
             <Input
               id="securityAnswer"
-              placeholder="Cevaninizi giriniz"
+              placeholder="Cevabınızı giriniz"
               {...register("securityAnswer")}
               aria-invalid={!!errors.securityAnswer}
               className="h-10"
@@ -513,7 +513,7 @@ export function RegisterForm() {
                 Kayit yapiliyor...
               </>
             ) : (
-              "Kayit Ol"
+              "Kayıt Ol"
             )}
           </Button>
         </form>
