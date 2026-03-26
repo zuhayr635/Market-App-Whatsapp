@@ -114,7 +114,16 @@ export function RegisterForm() {
     setValue,
     formState: { errors },
   } = useForm<RegisterInput>({
-    resolver: zodResolver(registerSchema),
+    resolver: async (values, context, options) => {
+      // Sanitize undefined values to empty strings before Zod validation
+      const sanitized = { ...values }
+      for (const key of Object.keys(sanitized) as (keyof typeof sanitized)[]) {
+        if (sanitized[key] === undefined || sanitized[key] === null) {
+          (sanitized as Record<string, unknown>)[key] = key === "kvkkConsent" ? false : ""
+        }
+      }
+      return zodResolver(registerSchema)(sanitized, context, options)
+    },
     defaultValues: {
       name: "",
       surname: "",
