@@ -36,11 +36,11 @@ interface District {
 }
 
 const SECURITY_QUESTIONS = [
-  "Annenizin kizlik soyadi nedir?",
-  "Ilk evcil hayvaninizin adi nedir?",
-  "Ilk okulunuzun adi nedir?",
-  "En sevdiginiz film nedir?",
-  "Dogdugunuz sehir neresidir?",
+  "Annenizin kızlık soyadı nedir?",
+  "İlk evcil hayvanınızın adı nedir?",
+  "İlk okulunuzun adı nedir?",
+  "En sevdiğiniz film nedir?",
+  "Doğduğunuz şehir neresidir?",
 ]
 
 function PasswordStrengthIndicator({ password }: { password: string }) {
@@ -116,6 +116,17 @@ export function RegisterForm() {
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
+      name: "",
+      surname: "",
+      email: "",
+      phone: "",
+      cityId: "",
+      districtId: "",
+      address: "",
+      password: "",
+      passwordConfirm: "",
+      securityQuestion: "",
+      securityAnswer: "",
       kvkkConsent: false as unknown as true,
     },
   })
