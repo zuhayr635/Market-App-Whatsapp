@@ -443,11 +443,11 @@ export function RegisterForm() {
           <input
             ref={honeypotRef}
             type="text"
-            name="website"
+            name="_xfield"
             tabIndex={-1}
-            autoComplete="off"
+            autoComplete="new-password"
             aria-hidden="true"
-            style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0 }}
+            style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0, width: 0, overflow: "hidden" }}
           />
 
           {/* CAPTCHA */}
