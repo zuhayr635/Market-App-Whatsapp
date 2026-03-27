@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { ProductStatus, Prisma } from "@/generated/prisma"
 import { generateSlug } from "@/lib/utils/slug"
 import { productSchema } from "@/lib/validations/product"
 
+async function checkAdmin() {
+  const session = await auth()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return session?.user && (session.user as any).type === "admin"
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { id } = params
 
@@ -62,6 +72,9 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { id } = params
     const body = await request.json()
@@ -204,6 +217,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { id } = params
     const body = await request.json()
@@ -244,6 +260,9 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { id } = params
 

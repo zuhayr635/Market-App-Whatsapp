@@ -489,6 +489,8 @@ model Order {
 
   couponCode      String?
   discountAmount  Decimal?    @db.Decimal(10, 2)
+  stripeSessionId String?
+  stripePaymentStatus String?
 
   user         User           @relation(fields: [userId], references: [id])
   items        OrderItem[]
@@ -510,6 +512,7 @@ enum OrderStatus {
   PAYMENT_WAITING
   RECEIPT_UPLOADED
   PAYMENT_CONFIRMED
+  STRIPE_PAID
   PREPARING
   SHIPPED
   DELIVERED

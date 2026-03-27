@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Loader2, MessageCircle } from "lucide-react"
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Loader2, MessageCircle, CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
@@ -36,6 +36,7 @@ export default function CartPage() {
   const [selectedAddressId, setSelectedAddressId] = useState("")
   const [orderNote, setOrderNote] = useState("")
   const [sending, setSending] = useState(false)
+  const [stripeLoading, setStripeLoading] = useState(false)
   const [couponCode, setCouponCode] = useState('')
   const [couponDiscount, setCouponDiscount] = useState(0)
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; type: string; value: number } | null>(null)
@@ -189,6 +190,36 @@ export default function CartPage() {
       toast.error(error instanceof Error ? error.message : "Sipariş gönderilemedi")
     } finally {
       setSending(false)
+    }
+  }
+
+  const handleStripeCheckout = async () => {
+    if (!cart || cart.items.length === 0) return
+    setStripeLoading(true)
+    try {
+      const selectedAddress = addresses.find((a) => a.id === selectedAddressId)
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          addressId: selectedAddressId || undefined,
+          orderNote: orderNote || undefined,
+          couponCode: appliedCoupon?.code || undefined,
+          discountAmount: couponDiscount || undefined,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || "Ödeme başlatılamadı")
+      }
+
+      const { url } = await res.json()
+      window.dispatchEvent(new CustomEvent("cart-updated"))
+      window.location.href = url
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Ödeme başlatılamadı")
+      setStripeLoading(false)
     }
   }
 
@@ -410,10 +441,24 @@ export default function CartPage() {
           {/* Actions */}
           <div className="space-y-3">
             <Button
+              className="w-full gap-2"
+              size="lg"
+              onClick={handleStripeCheckout}
+              disabled={stripeLoading || sending}
+            >
+              {stripeLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <CreditCard className="h-5 w-5" />
+              )}
+              {stripeLoading ? "Yönlendiriliyor..." : "Kredi Kartı ile Öde"}
+            </Button>
+
+            <Button
               className="w-full gap-2 bg-green-600 text-white hover:bg-green-700"
               size="lg"
               onClick={handleWhatsAppOrder}
-              disabled={sending}
+              disabled={sending || stripeLoading}
             >
               {sending ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

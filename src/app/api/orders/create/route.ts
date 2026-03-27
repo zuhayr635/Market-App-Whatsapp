@@ -178,13 +178,20 @@ export async function POST(req: NextRequest) {
     couponCode ? { code: couponCode, discount } : undefined,
   )
 
-  // Get WhatsApp number from settings or use default
-  let whatsappNumber = "905551234567" // default
+  // Get WhatsApp number from settings
+  let whatsappNumber = ""
   try {
     const setting = await db.setting.findUnique({ where: { key: "whatsapp_number" } })
     if (setting) whatsappNumber = setting.value.replace(/\D/g, "")
   } catch {
-    // use default
+    // silently fail
+  }
+
+  if (!whatsappNumber) {
+    return NextResponse.json(
+      { error: "WhatsApp numarası ayarlanmamış. Lütfen admin panelinden ayarlayın." },
+      { status: 500 }
+    )
   }
 
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`

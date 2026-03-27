@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { unlink } from "fs/promises"
 import path from "path"
+
+async function checkAdmin() {
+  const session = await auth()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return session?.user && (session.user as any).type === "admin"
+}
 
 // GET — list product images ordered by sortOrder
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { id } = await params
     const images = await db.productImage.findMany({
@@ -28,6 +38,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { id } = await params
     const body = await req.json()
@@ -78,6 +91,9 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { id } = await params
     const body = await req.json()
@@ -134,6 +150,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { id } = await params
     const { searchParams } = new URL(req.url)

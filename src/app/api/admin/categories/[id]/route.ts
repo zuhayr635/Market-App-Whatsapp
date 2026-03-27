@@ -1,12 +1,22 @@
+import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { NextRequest, NextResponse } from "next/server"
 import { categorySchema } from "@/lib/validations/category"
 import { generateSlug } from "@/lib/utils/slug"
 
+async function checkAdmin() {
+  const session = await auth()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return session?.user && (session.user as any).type === "admin"
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { id } = params
     const category = await db.category.findUnique({
@@ -32,6 +42,9 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { id } = params
     const body = await req.json()
@@ -58,6 +71,9 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { id } = params
 

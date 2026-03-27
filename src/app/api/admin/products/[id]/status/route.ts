@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { ProductStatus } from "@/generated/prisma"
 
@@ -6,6 +7,11 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const session = await auth()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!session?.user || (session.user as any).type !== "admin") {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const { id } = params
     const body = await request.json()

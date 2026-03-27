@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { clearCache } from "@/lib/cache"
+
+async function checkAdmin() {
+  const session = await auth()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return session?.user && (session.user as any).type === "admin"
+}
 
 async function getCurrentRate() {
   const exchangeRate = await db.exchangeRate.findFirst({
@@ -26,6 +33,9 @@ async function getCurrentRate() {
 }
 
 export async function GET() {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const data = await getCurrentRate()
     return NextResponse.json(data)
@@ -35,6 +45,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const body = await request.json()
     const { rate } = body
@@ -71,6 +84,9 @@ export async function POST(request: Request) {
 }
 
 export async function PUT() {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
   try {
     const response = await fetch("https://open.er-api.com/v6/latest/USD")
     if (!response.ok) {
