@@ -119,6 +119,7 @@ interface SerializedProduct {
   tabs: ProductTab[]
   tags: { id: string; name: string; slug: string }[]
   variations: ProductVariation[]
+  productVariationValueImages?: { id: string; variationValueId: string; imageUrl: string }[]
 }
 
 interface ProductDetailClientProps {
@@ -184,11 +185,21 @@ export function ProductDetailClient({
   const [isFavorited, setIsFavorited] = useState(false)
   const [favoriteLoading, setFavoriteLoading] = useState(false)
   const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null)
+  const [resolvedVariationImage, setResolvedVariationImage] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [linkCopied, setLinkCopied] = useState(false)
   const [activeTab, setActiveTab] = useState<string>(
     product.tabs.length > 0 ? `tab-${product.tabs[0].id}` : "description"
   )
+
+  // Build per-product value image map: variationValueId -> imageUrl
+  const productValueImagesMap = useMemo<Record<string, string>>(() => {
+    const map: Record<string, string> = {}
+    for (const pvi of product.productVariationValueImages ?? []) {
+      map[pvi.variationValueId] = pvi.imageUrl
+    }
+    return map
+  }, [product.productVariationValueImages])
 
   // Check favorite status and track recently viewed
   useEffect(() => {
@@ -247,8 +258,8 @@ export function ProductDetailClient({
   const outOfStock = currentStock <= 0
   const lowStock = currentStock > 0 && currentStock <= product.lowStockThreshold
 
-  // Active variation image
-  const activeVariationImage = selectedVariation?.imageUrl || null
+  // Active variation image (uses resolved priority chain)
+  const activeVariationImage = resolvedVariationImage
 
   // Current SKU
   const currentSku = selectedVariation?.sku || product.sku
@@ -300,11 +311,30 @@ export function ProductDetailClient({
   }
 
   const handleVariationChange = (
-    _selected: Record<string, string>,
+    selected: Record<string, string>,
     variation: ProductVariation | null
   ) => {
     setSelectedVariation(variation)
     setQuantity(1)
+
+    // Priority: combination image → per-product value image → global value image → null
+    if (variation?.imageUrl) {
+      setResolvedVariationImage(variation.imageUrl)
+      return
+    }
+
+    // Find per-product value image for selected values
+    let resolvedImg: string | null = null
+    for (const vType of variationTypes) {
+      const selectedValue = selected[vType.name]
+      if (!selectedValue) continue
+      const valObj = vType.values.find((v) => v.value === selectedValue)
+      if (!valObj) continue
+      const perProductImg = productValueImagesMap[valObj.id]
+      if (perProductImg) { resolvedImg = perProductImg; break }
+      if (valObj.image) { resolvedImg = valObj.image; break }
+    }
+    setResolvedVariationImage(resolvedImg)
   }
 
   // Determine if sale is currently active
@@ -397,6 +427,7 @@ export function ProductDetailClient({
               variationTypes={variationTypes}
               variations={product.variations}
               onChange={handleVariationChange}
+              productValueImages={productValueImagesMap}
             />
           )}
 
