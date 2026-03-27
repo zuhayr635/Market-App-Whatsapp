@@ -9,7 +9,9 @@ import {
   X,
   Palette,
   Package,
+  Camera,
 } from "lucide-react"
+import { ImagePickerModal } from "@/components/admin/image-picker-modal"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -109,6 +111,17 @@ export function VariationManager({
   const [bulkStock, setBulkStock] = useState("")
   const [bulkPriceDiff, setBulkPriceDiff] = useState("")
 
+  // Image picker
+  const [imagePickerOpen, setImagePickerOpen] = useState(false)
+  const [imagePickerTarget, setImagePickerTarget] = useState<
+    | { type: "combination"; tempId: string }
+    | { type: "productValue"; valueId: string }
+    | null
+  >(null)
+
+  // Product variation value images (ürün bazlı değer görselleri)
+  const [productValueImages, setProductValueImages] = useState<Record<string, string>>({})
+
   // Fetch all variation types
   const fetchTypes = useCallback(async () => {
     try {
@@ -170,13 +183,31 @@ export function VariationManager({
     }
   }, [productId])
 
+  const fetchProductValueImages = useCallback(async () => {
+    if (!productId) return
+    try {
+      const res = await fetch(`/api/admin/products/${productId}/variation-value-images`)
+      if (res.ok) {
+        const data: Array<{ variationValueId: string; imageUrl: string }> = await res.json()
+        const map: Record<string, string> = {}
+        for (const item of data) {
+          map[item.variationValueId] = item.imageUrl
+        }
+        setProductValueImages(map)
+      }
+    } catch {
+      // silent
+    }
+  }, [productId])
+
   useEffect(() => {
     fetchTypes()
   }, [fetchTypes])
 
   useEffect(() => {
     fetchProductVariations()
-  }, [fetchProductVariations])
+    fetchProductValueImages()
+  }, [fetchProductVariations, fetchProductValueImages])
 
   // After both types and product variations are loaded, reconstruct selected types
   useEffect(() => {
@@ -432,6 +463,57 @@ export function VariationManager({
     setBulkPriceDiff("")
     toast.success("Tüm fiyat farkları güncellendi")
   }
+
+  const handleBulkAssignImage = useCallback((valueId: string, imageUrl: string) => {
+    let valueName: string | null = null
+    let typeName: string | null = null
+    for (const st of selectedTypes) {
+      const val = st.values.find((v) => v.id === valueId)
+      if (val) {
+        valueName = val.value
+        typeName = st.name
+        break
+      }
+    }
+    if (!valueName || !typeName) return
+
+    setCombinations((prev) =>
+      prev.map((row) =>
+        row.combination[typeName!] === valueName ? { ...row, imageUrl } : row
+      )
+    )
+    toast.success(`"${valueName}" içeren tüm kombinasyonlara görsel atandı`)
+  }, [selectedTypes])
+
+  const handleImagePickerSelect = useCallback(
+    async (url: string) => {
+      if (!imagePickerTarget) return
+
+      if (imagePickerTarget.type === "combination") {
+        handleUpdateCombination(imagePickerTarget.tempId, "imageUrl", url)
+      } else {
+        const valueId = imagePickerTarget.valueId
+        setProductValueImages((prev) => ({ ...prev, [valueId]: url }))
+
+        if (productId) {
+          try {
+            await fetch(`/api/admin/products/${productId}/variation-value-images`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ variationValueId: valueId, imageUrl: url }),
+            })
+            handleBulkAssignImage(valueId, url)
+          } catch {
+            toast.error("Görsel kaydedilemedi")
+          }
+        } else {
+          handleBulkAssignImage(valueId, url)
+        }
+      }
+      setImagePickerTarget(null)
+    },
+    [imagePickerTarget, productId, handleBulkAssignImage, handleUpdateCombination]
+  )
 
   const handleSaveVariations = async () => {
     if (!productId) {
@@ -698,6 +780,29 @@ export function VariationManager({
                               />
                             )}
                             {v.value}
+                            {isSelected && v.id && (
+                              <span
+                                role="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setImagePickerTarget({ type: "productValue", valueId: v.id! })
+                                  setImagePickerOpen(true)
+                                }}
+                                className="ml-0.5 rounded"
+                                title="Bu değer için ürün görseli ata"
+                              >
+                                {productValueImages[v.id!] ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={productValueImages[v.id!]}
+                                    alt=""
+                                    className="size-4 rounded object-cover"
+                                  />
+                                ) : (
+                                  <Camera className="size-3 opacity-70" />
+                                )}
+                              </span>
+                            )}
                           </button>
                         )
                       })}
@@ -834,6 +939,9 @@ export function VariationManager({
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-gray-50 border-b">
+                        <th className="text-center px-3 py-2 font-medium text-muted-foreground w-12">
+                          Görsel
+                        </th>
                         <th className="text-left px-3 py-2 font-medium text-muted-foreground">
                           Kombinasyon
                         </th>
@@ -860,6 +968,23 @@ export function VariationManager({
                           key={row.tempId}
                           className="border-b last:border-b-0 hover:bg-gray-50/50"
                         >
+                          <td className="px-3 py-2 text-center">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setImagePickerTarget({ type: "combination", tempId: row.tempId })
+                                setImagePickerOpen(true)
+                              }}
+                              className="relative size-8 rounded border bg-gray-50 hover:bg-gray-100 flex items-center justify-center overflow-hidden mx-auto"
+                            >
+                              {row.imageUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={row.imageUrl} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <Camera className="size-3.5 text-muted-foreground" />
+                              )}
+                            </button>
+                          </td>
                           <td className="px-3 py-2">
                             <div className="flex items-center gap-1.5">
                               {/* Show color swatches if applicable */}
@@ -996,6 +1121,21 @@ export function VariationManager({
           </div>
         )}
       </CardContent>
+
+      <ImagePickerModal
+        open={imagePickerOpen}
+        onClose={() => {
+          setImagePickerOpen(false)
+          setImagePickerTarget(null)
+        }}
+        onSelect={handleImagePickerSelect}
+        productId={productId}
+        title={
+          imagePickerTarget?.type === "combination"
+            ? "Kombinasyon Görseli Seç"
+            : "Değer Görseli Seç (Bu Ürün)"
+        }
+      />
     </Card>
   )
 }
