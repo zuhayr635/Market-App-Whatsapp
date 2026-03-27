@@ -225,6 +225,7 @@ model Product {
   relatedFrom     RelatedProduct[] @relation("RelatedFrom")
   relatedTo       RelatedProduct[] @relation("RelatedTo")
   favorites       Favorite[]
+  productVariationValueImages ProductVariationValueImage[]
   cartItems       CartItem[]
   recentlyViewed  RecentlyViewed[]
   stockAlerts     StockAlert[]
@@ -409,6 +410,7 @@ model VariationValue {
   status          Boolean @default(true)
 
   variationType VariationType @relation(fields: [variationTypeId], references: [id], onDelete: Cascade)
+  productVariationValueImages ProductVariationValueImage[]
 
   @@map("variation_values")
 }
@@ -429,6 +431,19 @@ model ProductVariation {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_variations")
+}
+
+model ProductVariationValueImage {
+  id               String @id @default(cuid())
+  productId        String
+  variationValueId String
+  imageUrl         String @db.Text
+
+  product        Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variationValue VariationValue @relation(fields: [variationValueId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, variationValueId])
+  @@map("product_variation_value_images")
 }
 
 model RelatedProduct {
