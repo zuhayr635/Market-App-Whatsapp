@@ -1,0 +1,9 @@
+-- Add STRIPE_PAID to OrderStatus enum
+ALTER TABLE `orders` MODIFY COLUMN `status` ENUM('PENDING', 'IBAN_SENT', 'PAYMENT_WAITING', 'RECEIPT_UPLOADED', 'PAYMENT_CONFIRMED', 'STRIPE_PAID', 'PREPARING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'RETURNED') NOT NULL DEFAULT 'PENDING';
+
+-- Also update order_history status column if it uses the same enum
+ALTER TABLE `order_history` MODIFY COLUMN `status` ENUM('PENDING', 'IBAN_SENT', 'PAYMENT_WAITING', 'RECEIPT_UPLOADED', 'PAYMENT_CONFIRMED', 'STRIPE_PAID', 'PREPARING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'RETURNED') NOT NULL;
+
+-- Add stripeSessionId and stripePaymentStatus columns to orders if not exist
+ALTER TABLE `orders` ADD COLUMN IF NOT EXISTS `stripeSessionId` VARCHAR(191) NULL;
+ALTER TABLE `orders` ADD COLUMN IF NOT EXISTS `stripePaymentStatus` VARCHAR(191) NULL;
