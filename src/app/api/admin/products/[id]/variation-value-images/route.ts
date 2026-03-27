@@ -2,22 +2,16 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 
-async function requireAdmin(session: Awaited<ReturnType<typeof auth>>) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (!session?.user || (session.user as any).type !== "admin") {
-    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
-  }
-  return null
-}
-
 // GET: fetch all value images for a product
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth()
-  const denied = await requireAdmin(session)
-  if (denied) return denied
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!session?.user || (session.user as any).type !== "admin") {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
 
   const { id: productId } = await params
   const images = await db.productVariationValueImage.findMany({
@@ -32,8 +26,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth()
-  const denied = await requireAdmin(session)
-  if (denied) return denied
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!session?.user || (session.user as any).type !== "admin") {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
 
   const { id: productId } = await params
   const { variationValueId, imageUrl } = await req.json()
@@ -56,8 +52,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth()
-  const denied = await requireAdmin(session)
-  if (denied) return denied
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!session?.user || (session.user as any).type !== "admin") {
+    return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+  }
 
   const { id: productId } = await params
   const { variationValueId } = await req.json()
