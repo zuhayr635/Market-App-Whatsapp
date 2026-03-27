@@ -22,7 +22,9 @@ import {
   Loader2,
   Palette,
   X,
+  Camera,
 } from "lucide-react"
+import { ImagePickerModal } from "@/components/admin/image-picker-modal"
 
 // ---------- Types ----------
 
@@ -65,6 +67,9 @@ export default function VaryasyonlarPage() {
   const [editingType, setEditingType] = useState<VariationType | null>(null)
   const [deletingType, setDeletingType] = useState<VariationType | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  const [imagePickerOpen, setImagePickerOpen] = useState(false)
+  const [imagePickerIndex, setImagePickerIndex] = useState<number | null>(null)
 
   // Form state
   const [formName, setFormName] = useState("")
@@ -461,6 +466,23 @@ export default function VaryasyonlarPage() {
                           />
                         </div>
                       )}
+                      {/* Görsel butonu */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImagePickerIndex(index)
+                          setImagePickerOpen(true)
+                        }}
+                        className="relative size-7 rounded border bg-gray-50 hover:bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0"
+                        title="Görsel seç"
+                      >
+                        {v.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={v.image} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <Camera className="size-3.5 text-muted-foreground" />
+                        )}
+                      </button>
                       <Input
                         type="number"
                         placeholder="Sıra"
@@ -538,6 +560,19 @@ export default function VaryasyonlarPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Image Picker Modal */}
+      <ImagePickerModal
+        open={imagePickerOpen}
+        onClose={() => setImagePickerOpen(false)}
+        onSelect={(url) => {
+          if (imagePickerIndex !== null) {
+            handleUpdateValue(imagePickerIndex, "image", url)
+          }
+          setImagePickerIndex(null)
+        }}
+        title="Değer Görseli Seç"
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
