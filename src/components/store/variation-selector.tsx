@@ -34,12 +34,14 @@ interface VariationSelectorProps {
   variationTypes: VariationType[]
   variations: ProductVariation[]
   onChange: (selected: Record<string, string>, variation: ProductVariation | null) => void
+  productValueImages?: Record<string, string>  // variationValueId -> imageUrl
 }
 
 export function VariationSelector({
   variationTypes,
   variations,
   onChange,
+  productValueImages = {},
 }: VariationSelectorProps) {
   const [selected, setSelected] = useState<Record<string, string>>({})
 
@@ -170,12 +172,19 @@ export function VariationSelector({
                         !isAvailable && !isSelected && "opacity-40 cursor-not-allowed"
                       )}
                     >
-                      <span
-                        className="absolute inset-[3px] rounded-full shadow-inner"
-                        style={{
-                          backgroundColor: valObj?.colorCode || "#ccc",
-                        }}
-                      />
+                      {(productValueImages[valObj?.id ?? ""] || valObj?.image) ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={productValueImages[valObj?.id ?? ""] || valObj?.image || ""}
+                          alt={valueName}
+                          className="absolute inset-[3px] rounded-full object-cover"
+                        />
+                      ) : (
+                        <span
+                          className="absolute inset-[3px] rounded-full shadow-inner"
+                          style={{ backgroundColor: valObj?.colorCode || "#ccc" }}
+                        />
+                      )}
                       {!isAvailable && !isSelected && (
                         <span className="absolute inset-0 flex items-center justify-center">
                           <span className="block h-[1px] w-full rotate-45 bg-gray-400" />
@@ -188,8 +197,10 @@ export function VariationSelector({
             ) : vType.displayType === "button" ? (
               <div className="flex flex-wrap gap-2">
                 {usedValues.map((valueName) => {
+                  const valObj = valueMap.get(valueName)
                   const isAvailable = available.has(valueName)
                   const isSelected = selected[vType.name] === valueName
+                  const imgSrc = productValueImages[valObj?.id ?? ""] || valObj?.image
 
                   return (
                     <button
@@ -197,13 +208,17 @@ export function VariationSelector({
                       onClick={() => handleSelect(vType.name, valueName)}
                       disabled={!isAvailable && !isSelected}
                       className={cn(
-                        "rounded-lg border px-3 py-1.5 text-sm font-medium transition-all",
+                        "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all",
                         isSelected
                           ? "border-primary bg-primary text-primary-foreground"
                           : "border-border bg-background text-foreground hover:border-primary/50",
                         !isAvailable && !isSelected && "opacity-40 cursor-not-allowed line-through"
                       )}
                     >
+                      {imgSrc && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={imgSrc} alt={valueName} className="size-5 rounded object-cover" />
+                      )}
                       {valueName}
                     </button>
                   )
@@ -211,35 +226,49 @@ export function VariationSelector({
               </div>
             ) : (
               /* dropdown */
-              <select
-                value={selected[vType.name] || ""}
-                onChange={(e) => {
-                  const val = e.target.value
-                  if (val) {
-                    handleSelect(vType.name, val)
-                  } else {
-                    const newSelected = { ...selected }
-                    delete newSelected[vType.name]
-                    setSelected(newSelected)
-                    onChange(newSelected, null)
-                  }
-                }}
-                className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
-              >
-                <option value="">{vType.name} seçiniz</option>
-                {usedValues.map((valueName) => {
-                  const isAvailable = available.has(valueName)
-                  return (
-                    <option
-                      key={valueName}
-                      value={valueName}
-                      disabled={!isAvailable}
-                    >
-                      {valueName} {!isAvailable ? "(Tükendi)" : ""}
-                    </option>
-                  )
-                })}
-              </select>
+              <>
+                <select
+                  value={selected[vType.name] || ""}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (val) {
+                      handleSelect(vType.name, val)
+                    } else {
+                      const newSelected = { ...selected }
+                      delete newSelected[vType.name]
+                      setSelected(newSelected)
+                      onChange(newSelected, null)
+                    }
+                  }}
+                  className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
+                >
+                  <option value="">{vType.name} seçiniz</option>
+                  {usedValues.map((valueName) => {
+                    const isAvailable = available.has(valueName)
+                    return (
+                      <option
+                        key={valueName}
+                        value={valueName}
+                        disabled={!isAvailable}
+                      >
+                        {valueName} {!isAvailable ? "(Tükendi)" : ""}
+                      </option>
+                    )
+                  })}
+                </select>
+                {selected[vType.name] && (() => {
+                  const selValObj = valueMap.get(selected[vType.name])
+                  const imgSrc = productValueImages[selValObj?.id ?? ""] || selValObj?.image
+                  return imgSrc ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={imgSrc}
+                      alt={selected[vType.name]}
+                      className="mt-1.5 size-8 rounded border object-cover"
+                    />
+                  ) : null
+                })()}
+              </>
             )}
           </div>
         )
