@@ -57,6 +57,7 @@ export async function GET(
         variations: {
           where: { status: true },
         },
+        productVariationValueImages: true,
         relatedFrom: {
           include: {
             related: {
