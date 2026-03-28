@@ -1,4 +1,4 @@
-CREATE TABLE `product_variation_value_images` (
+CREATE TABLE IF NOT EXISTS `product_variation_value_images` (
     `id` VARCHAR(191) NOT NULL,
     `productId` VARCHAR(191) NOT NULL,
     `variationValueId` VARCHAR(191) NOT NULL,
