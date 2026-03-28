@@ -71,7 +71,20 @@ async function main() {
 
     try {
       for (const stmt of statements) {
-        await prisma.$executeRawUnsafe(stmt);
+        try {
+          await prisma.$executeRawUnsafe(stmt);
+        } catch (stmtErr) {
+          // 1060 = ER_DUP_FIELDNAME (column already exists) - safe to ignore for idempotency
+          // 1050 = ER_TABLE_EXISTS_ERROR - safe to ignore
+          // 1091 = ER_CANT_DROP_FIELD_OR_KEY - can't drop non-existent key
+          const ignoredCodes = [1060, 1050, 1091];
+          const code = stmtErr.meta?.code ?? stmtErr.code;
+          if (ignoredCodes.includes(Number(code))) {
+            console.log(`    (skipped: ${stmtErr.message.split('\n')[0]})`);
+          } else {
+            throw stmtErr;
+          }
+        }
       }
 
       // Record migration
