@@ -71,7 +71,7 @@ interface ImageGalleryManagerProps {
   onPendingImagesChange?: (images: PendingImage[]) => void
 }
 
-const MAX_IMAGES = 10
+const MAX_IMAGES = 50
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
 

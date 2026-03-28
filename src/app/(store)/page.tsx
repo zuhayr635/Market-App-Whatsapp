@@ -1,4 +1,4 @@
-import { ArrowRight, MessageCircle, Shield, Truck, RotateCcw, Sparkles, ShoppingBag } from "lucide-react"
+import { ArrowRight, MessageCircle, Shield, Truck, RotateCcw, Sparkles, ShoppingBag, Zap } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { db } from "@/lib/db"
@@ -24,12 +24,23 @@ async function getBanners() {
   }).catch(() => [])
 }
 
+async function getLatestProducts() {
+  return getCached("latestProducts", 60_000, async () => {
+    return db.product.findMany({
+      where: { status: "PUBLISHED" },
+      include: { images: { take: 1, orderBy: { sortOrder: "asc" } } },
+      take: 10,
+      orderBy: { createdAt: "desc" },
+    })
+  }).catch(() => [])
+}
+
 async function getFeaturedProducts() {
   return getCached("featuredProducts", 60_000, async () => {
     const products = await db.product.findMany({
       where: { status: "PUBLISHED", isFeatured: true },
       include: { images: { take: 1, orderBy: { sortOrder: "asc" } } },
-      take: 8,
+      take: 10,
       orderBy: { createdAt: "desc" },
     })
     return products
@@ -47,8 +58,72 @@ async function getCategories() {
   }).catch(() => [])
 }
 
+function ProductCard({ p }: { p: any }) {
+  return (
+    <Link href={`/urun/${p.slug}`} className="group">
+      <div className="overflow-hidden rounded-xl bg-[#12141A] border border-[rgba(255,102,0,0.12)] transition-all duration-300 hover:border-[rgba(255,102,0,0.32)] hover:shadow-[0_4px_20px_rgba(255,102,0,0.07)]">
+        <div className="relative aspect-[4/3] overflow-hidden" style={{ backgroundColor: '#1A1D27' }}>
+          {p.images?.[0]?.url ? (
+            <Image
+              src={p.images[0].url}
+              alt={p.name}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 1024px) 50vw, 20vw"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <ShoppingBag className="size-8" style={{ color: '#2A2A35' }} />
+            </div>
+          )}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            style={{ backgroundColor: 'rgba(10,11,15,0.3)' }}>
+            <span className="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest"
+              style={{ backgroundColor: 'rgba(255,102,0,0.9)', color: '#0A0B0F' }}>
+              İncele
+            </span>
+          </div>
+        </div>
+        <div className="p-3">
+          <h3 className="mb-1 line-clamp-2 text-xs font-medium leading-snug transition-colors group-hover:opacity-80"
+            style={{ color: '#D4CFC8' }}>
+            {p.name}
+          </h3>
+          <p className="text-sm font-semibold leading-none" style={{ color: 'var(--gold)' }}>
+            {Number(p.priceTl).toFixed(2)} ₺
+          </p>
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+function ProductSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-xl" style={{ backgroundColor: '#12141A', border: '1px solid rgba(255,102,0,0.08)' }}>
+      <div className="aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: '#1A1D27' }}>
+        <div className="text-center">
+          <div className="mx-auto mb-2 size-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,102,0,0.08)' }}>
+            <ShoppingBag className="size-4" style={{ color: 'rgba(255,102,0,0.3)' }} />
+          </div>
+          <p className="text-xs font-medium uppercase tracking-widest" style={{ color: '#2A2620' }}>Yakında</p>
+        </div>
+      </div>
+      <div className="p-3">
+        <div className="mb-1.5 h-3 w-2/3 rounded" style={{ backgroundColor: '#1A1D27' }} />
+        <div className="h-4 w-1/3 rounded" style={{ backgroundColor: '#1A1D27' }} />
+      </div>
+    </div>
+  )
+}
+
 export default async function HomePage() {
-  const [banners, products, categories] = await Promise.all([getBanners(), getFeaturedProducts(), getCategories()])
+  const [banners, latestProducts, featuredProducts, categories] = await Promise.all([
+    getBanners(),
+    getLatestProducts(),
+    getFeaturedProducts(),
+    getCategories(),
+  ])
 
   return (
     <div className="overflow-hidden" style={{ backgroundColor: '#0A0B0F' }}>
@@ -140,14 +215,59 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="mx-auto max-w-7xl px-6 py-20">
-        <div className="mb-12 flex items-end justify-between">
+      {/* En Yeniler */}
+      <section className="mx-auto max-w-7xl px-6 py-14">
+        <div className="mb-8 flex items-end justify-between">
           <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--gold)' }}>
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--gold)' }}>
+              — Yeni Gelenler
+            </p>
+            <h2 className="text-3xl font-light tracking-tight sm:text-4xl flex items-center gap-3" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: '#F5F0E8' }}>
+              En Yeniler
+              <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider"
+                style={{ backgroundColor: 'rgba(255,102,0,0.12)', border: '1px solid rgba(255,102,0,0.25)', color: 'var(--gold)' }}>
+                <Zap className="size-3" />
+                Yeni
+              </span>
+            </h2>
+          </div>
+          <Link href="/urunler" className="group hidden items-center gap-1.5 text-sm font-medium uppercase tracking-wider transition-colors hover:text-[var(--gold)] sm:inline-flex"
+            style={{ color: '#6B6560' }}
+          >
+            Tümünü Gör
+            <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
+
+        {latestProducts.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+            {latestProducts.map((p: any) => (
+              <ProductCard key={p.id} p={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <ProductSkeleton key={i} />
+            ))}
+          </div>
+        )}
+
+        <div className="mt-6 text-center sm:hidden">
+          <Link href="/urunler" className="inline-flex items-center gap-1.5 text-sm font-medium uppercase tracking-wider text-[var(--gold)]">
+            Tümünü Gör <ArrowRight className="size-3.5" />
+          </Link>
+        </div>
+      </section>
+
+      {/* Featured Products */}
+      <section className="mx-auto max-w-7xl px-6 py-14" style={{ borderTop: '1px solid rgba(255,102,0,0.06)' }}>
+        <div className="mb-8 flex items-end justify-between">
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--gold)' }}>
               — Koleksiyon
             </p>
-            <h2 className="text-4xl font-light tracking-tight sm:text-5xl" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: '#F5F0E8' }}>
+            <h2 className="text-3xl font-light tracking-tight sm:text-4xl" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: '#F5F0E8' }}>
               Öne Çıkan Ürünler
             </h2>
           </div>
@@ -159,68 +279,21 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        {products.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {products.map((p: any) => (
-              <Link key={p.id} href={`/urun/${p.slug}`} className="group">
-                <div className="overflow-hidden rounded-2xl bg-[#12141A] border border-[rgba(255,102,0,0.12)] transition-all duration-300 hover:border-[rgba(255,102,0,0.32)] hover:shadow-[0_8px_40px_rgba(255,102,0,0.07)]">
-                  <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: '#1A1D27' }}>
-                    {p.images?.[0]?.url ? (
-                      <Image
-                        src={p.images[0].url}
-                        alt={p.name}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <ShoppingBag className="size-12" style={{ color: '#2A2A35' }} />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                      style={{ backgroundColor: 'rgba(10,11,15,0.3)' }}>
-                      <span className="rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest"
-                        style={{ backgroundColor: 'rgba(255,102,0,0.9)', color: '#0A0B0F' }}>
-                        İncele
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="mb-2 line-clamp-2 text-sm font-medium leading-snug transition-colors group-hover:opacity-80"
-                      style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: '#D4CFC8', fontSize: '0.95rem' }}>
-                      {p.name}
-                    </h3>
-                    <p className="text-2xl font-semibold leading-none" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: 'var(--gold)' }}>
-                      {Number(p.priceTl).toFixed(2)} ₺
-                    </p>
-                  </div>
-                </div>
-              </Link>
+        {featuredProducts.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+            {featuredProducts.map((p: any) => (
+              <ProductCard key={p.id} p={p} />
             ))}
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="overflow-hidden rounded-2xl" style={{ backgroundColor: '#12141A', border: '1px solid rgba(255,102,0,0.08)' }}>
-                <div className="aspect-square flex items-center justify-center" style={{ backgroundColor: '#1A1D27' }}>
-                  <div className="text-center">
-                    <div className="mx-auto mb-3 size-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,102,0,0.08)' }}>
-                      <ShoppingBag className="size-6" style={{ color: 'rgba(255,102,0,0.3)' }} />
-                    </div>
-                    <p className="text-xs font-medium uppercase tracking-widest" style={{ color: '#2A2620' }}>Yakında</p>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <div className="mb-2 h-4 w-2/3 rounded" style={{ backgroundColor: '#1A1D27' }} />
-                  <div className="h-6 w-1/3 rounded" style={{ backgroundColor: '#1A1D27' }} />
-                </div>
-              </div>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <ProductSkeleton key={i} />
             ))}
           </div>
         )}
 
-        <div className="mt-8 text-center sm:hidden">
+        <div className="mt-6 text-center sm:hidden">
           <Link href="/urunler" className="inline-flex items-center gap-1.5 text-sm font-medium uppercase tracking-wider text-[var(--gold)]">
             Tümünü Gör <ArrowRight className="size-3.5" />
           </Link>
@@ -228,44 +301,64 @@ export default async function HomePage() {
       </section>
 
       {/* Categories */}
-      {categories.length > 0 && (
-        <section className="py-20" style={{ backgroundColor: '#070809', borderTop: '1px solid rgba(255,102,0,0.06)', borderBottom: '1px solid rgba(255,102,0,0.06)' }}>
-          <div className="mx-auto max-w-7xl px-6">
-            <div className="mb-12 text-center">
-              <p className="mb-3 text-xs font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--gold)' }}>— Keşfet</p>
-              <h2 className="text-4xl font-light tracking-tight sm:text-5xl" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: '#F5F0E8' }}>
+      <section className="py-16" style={{ backgroundColor: '#070809', borderTop: '1px solid rgba(255,102,0,0.06)', borderBottom: '1px solid rgba(255,102,0,0.06)' }}>
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-10 flex items-end justify-between">
+            <div>
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--gold)' }}>— Keşfet</p>
+              <h2 className="text-3xl font-light tracking-tight sm:text-4xl" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: '#F5F0E8' }}>
                 Kategoriler
               </h2>
             </div>
+            <Link href="/kategoriler" className="group hidden items-center gap-1.5 text-sm font-medium uppercase tracking-wider transition-colors hover:text-[var(--gold)] sm:inline-flex"
+              style={{ color: '#6B6560' }}
+            >
+              Tüm Kategoriler
+              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {categories.length > 0 ? (
+            <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
               {categories.map((cat: any, i: number) => (
                 <Link
                   key={cat.id}
                   href={`/kategori/${cat.slug}`}
-                  className="group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 bg-[#0D0F14] border border-[rgba(255,102,0,0.1)] hover:border-[rgba(255,102,0,0.28)] hover:bg-[#10121A]"
+                  className="group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 bg-[#0D0F14] border border-[rgba(255,102,0,0.1)] hover:border-[rgba(255,102,0,0.28)] hover:bg-[#10121A]"
                 >
-                  {/* Category number */}
-                  <span className="absolute right-8 top-8 text-6xl font-bold opacity-[0.04]" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: 'var(--gold)' }}>
+                  <span className="absolute right-6 top-6 text-5xl font-bold opacity-[0.04]" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: 'var(--gold)' }}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
 
-                  <div className="mb-4 inline-flex size-10 items-center justify-center rounded-xl" style={{ backgroundColor: 'rgba(255,102,0,0.08)', border: '1px solid rgba(255,102,0,0.15)' }}>
+                  <div className="mb-3 inline-flex size-9 items-center justify-center rounded-xl" style={{ backgroundColor: 'rgba(255,102,0,0.08)', border: '1px solid rgba(255,102,0,0.15)' }}>
                     <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" style={{ color: 'var(--gold)' }} />
                   </div>
 
-                  <h3 className="mb-1 text-xl font-semibold" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: '#F5F0E8' }}>
+                  <h3 className="mb-1 text-base font-semibold" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: '#F5F0E8' }}>
                     {cat.name}
                   </h3>
                   {cat.description && (
-                    <p className="text-sm line-clamp-2" style={{ color: '#4A4640' }}>{cat.description}</p>
+                    <p className="text-xs line-clamp-2" style={{ color: '#4A4640' }}>{cat.description}</p>
                   )}
                 </Link>
               ))}
             </div>
+          ) : (
+            <div className="text-center py-10">
+              <p className="text-sm mb-4" style={{ color: '#4A4640' }}>Henüz kategori eklenmemiş.</p>
+              <Link href="/urunler" className="inline-flex items-center gap-1.5 text-sm font-medium uppercase tracking-wider text-[var(--gold)]">
+                Tüm Ürünlere Bak <ArrowRight className="size-3.5" />
+              </Link>
+            </div>
+          )}
+
+          <div className="mt-6 text-center sm:hidden">
+            <Link href="/kategoriler" className="inline-flex items-center gap-1.5 text-sm font-medium uppercase tracking-wider text-[var(--gold)]">
+              Tüm Kategoriler <ArrowRight className="size-3.5" />
+            </Link>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* WhatsApp CTA */}
       <section className="mx-auto max-w-7xl px-6 py-24">
