@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect, useContext } from "react"
+import { useState, useMemo, useEffect, useContext, useCallback } from "react"
 import { CurrencyContext } from "@/context/currency-context"
 import {
   Heart,
@@ -310,31 +310,43 @@ export function ProductDetailClient({
     }
   }
 
+  // Resolve variation image with priority chain: combination → product-value → global-value → null
+  const resolveVariationImage = useCallback(
+    (
+      variation: ProductVariation | null,
+      sel: Record<string, string>
+    ): string | null => {
+      // 1. Combination image
+      if (variation?.imageUrl) return variation.imageUrl
+
+      // 2. Product-level value image
+      for (const typeName of Object.keys(sel)) {
+        const vType = variationTypes.find((t) => t.name === typeName)
+        const valObj = vType?.values.find((v) => v.value === sel[typeName])
+        if (valObj && productValueImagesMap[valObj.id]) {
+          return productValueImagesMap[valObj.id]
+        }
+      }
+
+      // 3. Global value image
+      for (const typeName of Object.keys(sel)) {
+        const vType = variationTypes.find((t) => t.name === typeName)
+        const valObj = vType?.values.find((v) => v.value === sel[typeName])
+        if (valObj?.image) return valObj.image
+      }
+
+      return null
+    },
+    [variationTypes, productValueImagesMap]
+  )
+
   const handleVariationChange = (
-    selected: Record<string, string>,
+    sel: Record<string, string>,
     variation: ProductVariation | null
   ) => {
     setSelectedVariation(variation)
     setQuantity(1)
-
-    // Priority: combination image → per-product value image → global value image → null
-    if (variation?.imageUrl) {
-      setResolvedVariationImage(variation.imageUrl)
-      return
-    }
-
-    // Find per-product value image for selected values
-    let resolvedImg: string | null = null
-    for (const vType of variationTypes) {
-      const selectedValue = selected[vType.name]
-      if (!selectedValue) continue
-      const valObj = vType.values.find((v) => v.value === selectedValue)
-      if (!valObj) continue
-      const perProductImg = productValueImagesMap[valObj.id]
-      if (perProductImg) { resolvedImg = perProductImg; break }
-      if (valObj.image) { resolvedImg = valObj.image; break }
-    }
-    setResolvedVariationImage(resolvedImg)
+    setResolvedVariationImage(resolveVariationImage(variation, sel))
   }
 
   // Determine if sale is currently active
