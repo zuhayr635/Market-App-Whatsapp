@@ -1,0 +1,263 @@
+<style>
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.theme-card {
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.2s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+.theme-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.4); }
+.theme-card.selected { border-color: #fff !important; box-shadow: 0 0 0 2px #fff, 0 6px 24px rgba(0,0,0,0.5); }
+.theme-preview {
+  padding: 12px;
+}
+.t-header {
+  border-radius: 6px 6px 0 0;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.t-body {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.t-card {
+  border-radius: 8px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.t-title { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+.t-price { font-size: 14px; font-weight: 900; }
+.t-badges { display: flex; gap: 4px; margin-bottom: 6px; }
+.t-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px; color: #fff; }
+.t-btn { border-radius: 6px; padding: 6px 10px; font-size: 10px; font-weight: 800; width: 100%; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
+.t-footer { border-radius: 0 0 6px 6px; padding: 6px 10px; font-size: 9px; text-align: center; }
+.theme-info {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.theme-name { font-size: 13px; font-weight: 700; }
+.theme-desc { font-size: 10px; opacity: 0.7; }
+.color-dots { display: flex; gap: 4px; }
+.cdot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
+</style>
+
+<h2>RC Araç Mağazası — 10 Tema Seçeneği</h2>
+<p class="subtitle">Hobi RC araçları ve parçaları için hazırlanmış temalar. Beğendiğine tıkla!</p>
+
+<div class="theme-grid" id="themeGrid">
+
+  <!-- 1. RC Turuncu -->
+  <div class="theme-card" data-choice="1" onclick="toggleSelect(this)" style="background:#111;">
+    <div class="theme-preview" style="background:#0F0F0F;">
+      <div class="t-header" style="background:#FF6600;color:#000;">Cihan Ekspress</div>
+      <div class="t-body" style="background:#0F0F0F;">
+        <div class="t-card" style="background:#1A1A1A;">
+          <div class="t-badges"><span class="t-badge" style="background:#FF6600;">Yeni</span><span class="t-badge" style="background:#e53e3e;">%20</span></div>
+          <div class="t-title" style="color:#F0F0F0;">Traxxas Slash 4X4</div>
+          <div class="t-price" style="color:#FF6600;">2.499 ₺</div>
+          <div class="t-btn" style="background:#FF6600;color:#000;margin-top:8px;">Sepete Ekle</div>
+        </div>
+      </div>
+      <div class="t-footer" style="background:#1A1A1A;color:#666;">© Cihan Ekspress RC Shop</div>
+    </div>
+    <div class="theme-info" style="background:#1A1A1A;">
+      <div><div class="theme-name" style="color:#FF6600;">RC Turuncu</div><div class="theme-desc" style="color:#888;">Koyu zemin, turuncu vurgu</div></div>
+      <div class="color-dots"><div class="cdot" style="background:#FF6600;"></div><div class="cdot" style="background:#1A1A1A;"></div><div class="cdot" style="background:#0F0F0F;"></div></div>
+    </div>
+  </div>
+
+  <!-- 2. Yarış Kırmızısı -->
+  <div class="theme-card" data-choice="2" onclick="toggleSelect(this)" style="background:#111;">
+    <div class="theme-preview" style="background:#0A0A0A;">
+      <div class="t-header" style="background:#CC0000;color:#fff;">Cihan Ekspress</div>
+      <div class="t-body" style="background:#0A0A0A;">
+        <div class="t-card" style="background:#1C1C1C;border-color:rgba(204,0,0,0.2);">
+          <div class="t-badges"><span class="t-badge" style="background:#CC0000;">Yeni</span><span class="t-badge" style="background:#FF6600;">%15</span></div>
+          <div class="t-title" style="color:#F5F5F5;">RC Monster Truck</div>
+          <div class="t-price" style="color:#CC0000;">1.899 ₺</div>
+          <div class="t-btn" style="background:#CC0000;color:#fff;margin-top:8px;">Sepete Ekle</div>
+        </div>
+      </div>
+      <div class="t-footer" style="background:#1C1C1C;color:#555;">© Cihan Ekspress RC Shop</div>
+    </div>
+    <div class="theme-info" style="background:#1C1C1C;">
+      <div><div class="theme-name" style="color:#CC0000;">Yarış Kırmızısı</div><div class="theme-desc" style="color:#888;">Agresif yarış stili</div></div>
+      <div class="color-dots"><div class="cdot" style="background:#CC0000;"></div><div class="cdot" style="background:#1C1C1C;"></div><div class="cdot" style="background:#0A0A0A;"></div></div>
+    </div>
+  </div>
+
+  <!-- 3. Elektrik Mavisi -->
+  <div class="theme-card" data-choice="3" onclick="toggleSelect(this)" style="background:#0A0F1A;">
+    <div class="theme-preview" style="background:#080D18;">
+      <div class="t-header" style="background:#0066FF;color:#fff;">Cihan Ekspress</div>
+      <div class="t-body" style="background:#080D18;">
+        <div class="t-card" style="background:#0F1A2E;border-color:rgba(0,102,255,0.2);">
+          <div class="t-badges"><span class="t-badge" style="background:#0066FF;">Yeni</span><span class="t-badge" style="background:#00CCFF;">Fırsat</span></div>
+          <div class="t-title" style="color:#E0EEFF;">RC Drift Arabası</div>
+          <div class="t-price" style="color:#00AAFF;">3.299 ₺</div>
+          <div class="t-btn" style="background:#0066FF;color:#fff;margin-top:8px;">Sepete Ekle</div>
+        </div>
+      </div>
+      <div class="t-footer" style="background:#0F1A2E;color:#334;">© Cihan Ekspress RC Shop</div>
+    </div>
+    <div class="theme-info" style="background:#0F1A2E;">
+      <div><div class="theme-name" style="color:#00AAFF;">Elektrik Mavisi</div><div class="theme-desc" style="color:#556;">Elektrikli araç teması</div></div>
+      <div class="color-dots"><div class="cdot" style="background:#0066FF;"></div><div class="cdot" style="background:#0F1A2E;"></div><div class="cdot" style="background:#00CCFF;"></div></div>
+    </div>
+  </div>
+
+  <!-- 4. Karbon Fiber -->
+  <div class="theme-card" data-choice="4" onclick="toggleSelect(this)" style="background:#050505;">
+    <div class="theme-preview" style="background:repeating-linear-gradient(45deg,#111 0px,#111 2px,#0A0A0A 2px,#0A0A0A 4px);">
+      <div class="t-header" style="background:#222;color:#C0C0C0;border-bottom:2px solid #444;">Cihan Ekspress</div>
+      <div class="t-body" style="background:#111;">
+        <div class="t-card" style="background:#1A1A1A;border-color:#333;">
+          <div class="t-badges"><span class="t-badge" style="background:#555;">Yeni</span><span class="t-badge" style="background:#888;">%10</span></div>
+          <div class="t-title" style="color:#D0D0D0;">Aluminum Chassis</div>
+          <div class="t-price" style="color:#C0C0C0;">899 ₺</div>
+          <div class="t-btn" style="background:#444;color:#fff;margin-top:8px;">Sepete Ekle</div>
+        </div>
+      </div>
+      <div class="t-footer" style="background:#222;color:#444;">© Cihan Ekspress RC Shop</div>
+    </div>
+    <div class="theme-info" style="background:#1A1A1A;">
+      <div><div class="theme-name" style="color:#C0C0C0;">Karbon Fiber</div><div class="theme-desc" style="color:#555;">Tam siyah, metalik gri</div></div>
+      <div class="color-dots"><div class="cdot" style="background:#C0C0C0;"></div><div class="cdot" style="background:#333;"></div><div class="cdot" style="background:#111;"></div></div>
+    </div>
+  </div>
+
+  <!-- 5. Altın Şampiyonu -->
+  <div class="theme-card" data-choice="5" onclick="toggleSelect(this)" style="background:#0A0800;">
+    <div class="theme-preview" style="background:#080600;">
+      <div class="t-header" style="background:linear-gradient(90deg,#8B6914,#D4A017);color:#000;">Cihan Ekspress</div>
+      <div class="t-body" style="background:#0D0A00;">
+        <div class="t-card" style="background:#161200;border-color:rgba(212,160,23,0.2);">
+          <div class="t-badges"><span class="t-badge" style="background:#D4A017;color:#000;">Premium</span><span class="t-badge" style="background:#8B6914;color:#fff;">Yeni</span></div>
+          <div class="t-title" style="color:#F0E0A0;">Kyosho Inferno</div>
+          <div class="t-price" style="color:#D4A017;">5.999 ₺</div>
+          <div class="t-btn" style="background:linear-gradient(90deg,#8B6914,#D4A017);color:#000;margin-top:8px;">Sepete Ekle</div>
+        </div>
+      </div>
+      <div class="t-footer" style="background:#161200;color:#4A3A00;">© Cihan Ekspress RC Shop</div>
+    </div>
+    <div class="theme-info" style="background:#161200;">
+      <div><div class="theme-name" style="color:#D4A017;">Altın Şampiyonu</div><div class="theme-desc" style="color:#6A5A20;">Premium koyu+altın</div></div>
+      <div class="color-dots"><div class="cdot" style="background:#D4A017;"></div><div class="cdot" style="background:#161200;"></div><div class="cdot" style="background:#8B6914;"></div></div>
+    </div>
+  </div>
+
+  <!-- 6. Off-Road Yeşil -->
+  <div class="theme-card" data-choice="6" onclick="toggleSelect(this)" style="background:#050A05;">
+    <div class="theme-preview" style="background:#050A05;">
+      <div class="t-header" style="background:#2D5A1B;color:#C8E6A0;">Cihan Ekspress</div>
+      <div class="t-body" style="background:#060D06;">
+        <div class="t-card" style="background:#0F1A0F;border-color:rgba(80,160,40,0.2);">
+          <div class="t-badges"><span class="t-badge" style="background:#4CAF50;">Off-Road</span><span class="t-badge" style="background:#8BC34A;">Yeni</span></div>
+          <div class="t-title" style="color:#C8E6A0;">Crawler Rock King</div>
+          <div class="t-price" style="color:#66BB6A;">1.799 ₺</div>
+          <div class="t-btn" style="background:#2D5A1B;color:#C8E6A0;margin-top:8px;">Sepete Ekle</div>
+        </div>
+      </div>
+      <div class="t-footer" style="background:#0F1A0F;color:#1A2A1A;">© Cihan Ekspress RC Shop</div>
+    </div>
+    <div class="theme-info" style="background:#0F1A0F;">
+      <div><div class="theme-name" style="color:#66BB6A;">Off-Road Yeşil</div><div class="theme-desc" style="color:#2A4A2A;">Crawler & arazi teması</div></div>
+      <div class="color-dots"><div class="cdot" style="background:#4CAF50;"></div><div class="cdot" style="background:#0F1A0F;"></div><div class="cdot" style="background:#2D5A1B;"></div></div>
+    </div>
+  </div>
+
+  <!-- 7. Neon Fırtına -->
+  <div class="theme-card" data-choice="7" onclick="toggleSelect(this)" style="background:#05000F;">
+    <div class="theme-preview" style="background:#05000F;">
+      <div class="t-header" style="background:#1A0040;color:#FF00FF;border-bottom:2px solid #8800FF;">Cihan Ekspress</div>
+      <div class="t-body" style="background:#08000F;">
+        <div class="t-card" style="background:#120025;border-color:rgba(136,0,255,0.3);">
+          <div class="t-badges"><span class="t-badge" style="background:#8800FF;">Yeni</span><span class="t-badge" style="background:#FF00FF;">Fırsat</span></div>
+          <div class="t-title" style="color:#EE88FF;">RC Speed Racer</div>
+          <div class="t-price" style="color:#CC00FF;">2.199 ₺</div>
+          <div class="t-btn" style="background:linear-gradient(90deg,#8800FF,#FF00FF);color:#fff;margin-top:8px;">Sepete Ekle</div>
+        </div>
+      </div>
+      <div class="t-footer" style="background:#120025;color:#330055;">© Cihan Ekspress RC Shop</div>
+    </div>
+    <div class="theme-info" style="background:#120025;">
+      <div><div class="theme-name" style="color:#CC00FF;">Neon Fırtına</div><div class="theme-desc" style="color:#550088;">Gaming/esport stili</div></div>
+      <div class="color-dots"><div class="cdot" style="background:#8800FF;"></div><div class="cdot" style="background:#120025;"></div><div class="cdot" style="background:#FF00FF;"></div></div>
+    </div>
+  </div>
+
+  <!-- 8. Ateş -->
+  <div class="theme-card" data-choice="8" onclick="toggleSelect(this)" style="background:#0F0300;">
+    <div class="theme-preview" style="background:#0F0300;">
+      <div class="t-header" style="background:linear-gradient(90deg,#8B0000,#FF4500);color:#FFD700;">Cihan Ekspress</div>
+      <div class="t-body" style="background:#100500;">
+        <div class="t-card" style="background:#1E0800;border-color:rgba(255,69,0,0.2);">
+          <div class="t-badges"><span class="t-badge" style="background:#FF4500;">Ateş</span><span class="t-badge" style="background:#FFD700;color:#000;">Fırsat</span></div>
+          <div class="t-title" style="color:#FFAA80;">Nitro Buggy</div>
+          <div class="t-price" style="color:#FF6633;">4.599 ₺</div>
+          <div class="t-btn" style="background:linear-gradient(90deg,#CC2200,#FF4500);color:#FFD700;margin-top:8px;">Sepete Ekle</div>
+        </div>
+      </div>
+      <div class="t-footer" style="background:#1E0800;color:#3A1500;">© Cihan Ekspress RC Shop</div>
+    </div>
+    <div class="theme-info" style="background:#1E0800;">
+      <div><div class="theme-name" style="color:#FF4500;">Ateş</div><div class="theme-desc" style="color:#552200;">Kırmızı-turuncu ateş</div></div>
+      <div class="color-dots"><div class="cdot" style="background:#FF4500;"></div><div class="cdot" style="background:#1E0800;"></div><div class="cdot" style="background:#FFD700;"></div></div>
+    </div>
+  </div>
+
+  <!-- 9. Çelik Endüstri -->
+  <div class="theme-card" data-choice="9" onclick="toggleSelect(this)" style="background:#0A0C10;">
+    <div class="theme-preview" style="background:#0A0C10;">
+      <div class="t-header" style="background:#1A2030;color:#7090C0;">Cihan Ekspress</div>
+      <div class="t-body" style="background:#0D1020;">
+        <div class="t-card" style="background:#151B2A;border-color:rgba(70,100,160,0.3);">
+          <div class="t-badges"><span class="t-badge" style="background:#2244AA;">Yeni</span><span class="t-badge" style="background:#4488FF;">İndirim</span></div>
+          <div class="t-title" style="color:#A0B8D8;">Axial SCX10 Pro</div>
+          <div class="t-price" style="color:#5588CC;">3.799 ₺</div>
+          <div class="t-btn" style="background:#2244AA;color:#7AAAE8;margin-top:8px;">Sepete Ekle</div>
+        </div>
+      </div>
+      <div class="t-footer" style="background:#1A2030;color:#222A3A;">© Cihan Ekspress RC Shop</div>
+    </div>
+    <div class="theme-info" style="background:#151B2A;">
+      <div><div class="theme-name" style="color:#5588CC;">Çelik Endüstri</div><div class="theme-desc" style="color:#3A4A6A;">Lacivert metalik</div></div>
+      <div class="color-dots"><div class="cdot" style="background:#2244AA;"></div><div class="cdot" style="background:#151B2A;"></div><div class="cdot" style="background:#4488FF;"></div></div>
+    </div>
+  </div>
+
+  <!-- 10. Sıcak Kum (Desert) -->
+  <div class="theme-card" data-choice="10" onclick="toggleSelect(this)" style="background:#100800;">
+    <div class="theme-preview" style="background:#100800;">
+      <div class="t-header" style="background:#3D2800;color:#E8A840;">Cihan Ekspress</div>
+      <div class="t-body" style="background:#140B00;">
+        <div class="t-card" style="background:#201200;border-color:rgba(200,140,40,0.2);">
+          <div class="t-badges"><span class="t-badge" style="background:#C87820;">Desert</span><span class="t-badge" style="background:#E8A840;color:#000;">Yeni</span></div>
+          <div class="t-title" style="color:#E0C080;">Desert Buggy Pro</div>
+          <div class="t-price" style="color:#D4901A;">2.799 ₺</div>
+          <div class="t-btn" style="background:#3D2800;color:#E8A840;margin-top:8px;">Sepete Ekle</div>
+        </div>
+      </div>
+      <div class="t-footer" style="background:#201200;color:#3A2000;">© Cihan Ekspress RC Shop</div>
+    </div>
+    <div class="theme-info" style="background:#201200;">
+      <div><div class="theme-name" style="color:#D4901A;">Sıcak Çöl</div><div class="theme-desc" style="color:#5A3800;">Amber & deri tonu</div></div>
+      <div class="color-dots"><div class="cdot" style="background:#C87820;"></div><div class="cdot" style="background:#201200;"></div><div class="cdot" style="background:#E8A840;"></div></div>
+    </div>
+  </div>
+
+</div>

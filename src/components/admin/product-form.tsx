@@ -167,6 +167,23 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
   // Pending images for create mode
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([])
 
+  // Pending variations for create mode
+  const [pendingVariations, setPendingVariations] = useState<{
+    hasVariations: boolean
+    combinations: Array<{
+      tempId: string
+      combination: Record<string, string>
+      sku: string
+      priceDiff: number | null
+      salePrice: number | null
+      stock: number
+      weight: number | null
+      imageUrl: string
+      description: string
+      status: boolean
+    }>
+  } | null>(null)
+
   // Fetch categories
   useEffect(() => {
     fetch("/api/admin/categories")
@@ -298,6 +315,31 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
             } catch {
               // Continue with remaining images
             }
+          }
+        }
+
+        // In create mode, save pending variations to the new product
+        if (!isEdit && pendingVariations?.combinations.length) {
+          try {
+            await fetch(`/api/admin/products/${product.id}/variations`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                variations: pendingVariations.combinations.map((row) => ({
+                  combination: row.combination,
+                  sku: row.sku || null,
+                  priceDiff: row.priceDiff,
+                  salePrice: row.salePrice,
+                  stock: row.stock,
+                  weight: row.weight,
+                  imageUrl: row.imageUrl || null,
+                  description: row.description || null,
+                  status: row.status,
+                })),
+              }),
+            })
+          } catch {
+            // Continue even if variations fail
           }
         }
 
@@ -613,7 +655,12 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
           </Section>
 
           {/* Varyasyonlar */}
-          <VariationManager productId={productId} />
+          <VariationManager
+            productId={productId}
+            onChange={(hasVariations, combinations) =>
+              setPendingVariations({ hasVariations, combinations })
+            }
+          />
 
           {/* Boyut ve Ağırlık */}
           <Section title="Boyut ve Ağırlık" defaultOpen={false}>

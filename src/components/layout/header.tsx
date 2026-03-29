@@ -171,6 +171,23 @@ export function Header({
                   {item.label}
                 </Link>
               ))}
+              {categories.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={<button className="inline-flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-bold transition-colors" style={{ color: '#9A9488' }} />}
+                  >
+                    Kategoriler
+                    <ChevronDown className="size-3 opacity-50" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" sideOffset={8}>
+                    {categories.map((cat) => (
+                      <DropdownMenuItem key={cat.id} render={<Link href={`/urunler?kategori=${cat.slug}`} />}>
+                        {cat.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </nav>
 
             <div className="flex-1" />

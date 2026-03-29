@@ -516,10 +516,16 @@ export function VariationManager({
   )
 
   const handleSaveVariations = async () => {
+    // In create mode (no productId), store combinations as pending
     if (!productId) {
-      toast.error("Varyasyonları kaydetmek için önce ürünü kaydedin")
+      if (onChange) {
+        onChange(hasVariations, combinations)
+      }
+      toast.success("Varyasyonlar kaydedilecek")
       return
     }
+
+    // In edit mode (with productId), save directly to database
     setSaving(true)
     try {
       const res = await fetch(`/api/admin/products/${productId}/variations`, {
@@ -952,6 +958,9 @@ export function VariationManager({
                           Fiyat Farkı
                         </th>
                         <th className="text-left px-3 py-2 font-medium text-muted-foreground">
+                          Satış Fiyatı
+                        </th>
+                        <th className="text-left px-3 py-2 font-medium text-muted-foreground">
                           Stok
                         </th>
                         <th className="text-center px-3 py-2 font-medium text-muted-foreground">
@@ -1047,6 +1056,25 @@ export function VariationManager({
                                 handleUpdateCombination(
                                   row.tempId,
                                   "priceDiff",
+                                  v === "" ? null : parseFloat(v)
+                                )
+                              }}
+                            />
+                          </td>
+                          <td className="px-3 py-2">
+                            <Input
+                              type="number"
+                              step="0.01"
+                              className="h-6 text-xs w-24"
+                              placeholder="0.00"
+                              value={
+                                row.salePrice != null ? row.salePrice : ""
+                              }
+                              onChange={(e) => {
+                                const v = e.target.value
+                                handleUpdateCombination(
+                                  row.tempId,
+                                  "salePrice",
                                   v === "" ? null : parseFloat(v)
                                 )
                               }}
