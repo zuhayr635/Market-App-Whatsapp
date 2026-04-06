@@ -400,7 +400,7 @@ export default function UrunlerPage() {
   // ---------- CSV Export ----------
 
   const handleExport = async () => {
-    const params = new URLSearchParams({ limit: "1000", sort })
+    const params = new URLSearchParams({ limit: "1000", sort, allImages: "true" })
     if (debouncedSearch) params.set("search", debouncedSearch)
     if (filterCategory) params.set("categoryId", filterCategory)
     if (filterStatus) params.set("status", filterStatus)
@@ -418,6 +418,7 @@ export default function UrunlerPage() {
       stockQty: p.stockQty,
       status: p.status,
       categories: p.categories.map((c: ProductCategory) => c.category.name).join("|"),
+      image_urls: p.images.map((img: ProductImage) => img.url).join("|"),
     }))
 
     const headers = Object.keys(rows[0] || {})

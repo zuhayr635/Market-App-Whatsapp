@@ -18,11 +18,12 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"))
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20")))
+    const limit = Math.min(1000, Math.max(1, parseInt(searchParams.get("limit") || "20")))
     const search = searchParams.get("search") || ""
     const categoryId = searchParams.get("categoryId") || ""
     const status = searchParams.get("status") || ""
     const sort = searchParams.get("sort") || "newest"
+    const allImages = searchParams.get("allImages") === "true"
 
     const where: Prisma.ProductWhereInput = {}
 
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest) {
             },
           },
           images: {
-            take: 1,
+            ...(allImages ? {} : { take: 1 }),
             orderBy: { sortOrder: "asc" },
             select: { id: true, url: true, altText: true },
           },

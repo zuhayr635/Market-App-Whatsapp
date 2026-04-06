@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
-import { writeFile, mkdir } from "fs/promises"
-import path from "path"
 
 export async function POST(req: NextRequest) {
   const session = await auth()
@@ -9,15 +7,21 @@ export async function POST(req: NextRequest) {
   if (!session?.user || (session.user as any).type !== "admin") {
     return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
   }
+
+  const apiKey = process.env.IMGBB_API_KEY
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: "IMGBB_API_KEY tanımlı değil" },
+      { status: 500 }
+    )
+  }
+
   try {
     const formData = await req.formData()
     const file = formData.get("file") as File | null
 
     if (!file) {
-      return NextResponse.json(
-        { error: "Dosya bulunamadı" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "Dosya bulunamadı" }, { status: 400 })
     }
 
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
@@ -28,26 +32,48 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const maxSize = 5 * 1024 * 1024 // 5MB
+    const maxSize = 32 * 1024 * 1024 // 32MB (imgbb limit)
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "Dosya boyutu 5MB'dan büyük olamaz" },
+        { error: "Dosya boyutu 32MB'dan büyük olamaz" },
         { status: 400 }
       )
     }
 
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg"
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-    const uploadDir = path.join(process.cwd(), "public/uploads/products")
-
-    await mkdir(uploadDir, { recursive: true })
-
     const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(path.join(uploadDir, fileName), buffer)
+    const base64 = Buffer.from(bytes).toString("base64")
+
+    const imgbbForm = new FormData()
+    imgbbForm.append("key", apiKey)
+    imgbbForm.append("image", base64)
+    imgbbForm.append("name", file.name)
+
+    const imgbbRes = await fetch("https://api.imgbb.com/1/upload", {
+      method: "POST",
+      body: imgbbForm,
+    })
+
+    if (!imgbbRes.ok) {
+      const err = await imgbbRes.text()
+      console.error("imgbb error:", err)
+      return NextResponse.json(
+        { error: "Resim yükleme servisi hatası" },
+        { status: 502 }
+      )
+    }
+
+    const imgbbData = await imgbbRes.json()
+    const url: string = imgbbData?.data?.url
+
+    if (!url) {
+      return NextResponse.json(
+        { error: "Resim URL'i alınamadı" },
+        { status: 502 }
+      )
+    }
 
     return NextResponse.json({
-      url: `/uploads/products/${fileName}`,
+      url,
       fileName: file.name,
       size: file.size,
     })

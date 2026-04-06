@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { unlink } from "fs/promises"
-import path from "path"
 
 async function checkAdmin() {
   const session = await auth()
@@ -174,14 +172,6 @@ export async function DELETE(
         { error: "Görsel bulunamadı" },
         { status: 404 }
       )
-    }
-
-    // Delete file from disk
-    try {
-      const filePath = path.join(process.cwd(), "public", image.url)
-      await unlink(filePath)
-    } catch {
-      // File may not exist, continue
     }
 
     // Delete record

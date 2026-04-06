@@ -18,6 +18,7 @@ interface ImportRow {
   stockQty?: string
   shortDesc?: string
   status?: string
+  image_urls?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        await db.product.create({
+        const product = await db.product.create({
           data: {
             name,
             slug,
@@ -97,6 +98,21 @@ export async function POST(request: NextRequest) {
             visibility: "PUBLIC",
           },
         })
+
+        // Import images from image_urls column
+        if (row.image_urls?.trim()) {
+          const urls = row.image_urls.split("|").map((u) => u.trim()).filter(Boolean)
+          for (let j = 0; j < urls.length; j++) {
+            await db.productImage.create({
+              data: {
+                productId: product.id,
+                url: urls[j],
+                sortOrder: j,
+                isFeatured: j === 0,
+              },
+            })
+          }
+        }
 
         created++
       } catch (err) {
