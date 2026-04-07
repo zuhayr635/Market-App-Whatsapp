@@ -44,8 +44,8 @@ export default async function StoreLayout({ children }: { children: React.ReactN
     for (const s of settings) map[s.key] = s.value
     return map
   })
-  const whatsappNumber = contactMap["whatsapp_number"] || ""
-  const contactPhone = contactMap["contact_phone"] || ""
+  const whatsappNumber = contactMap["whatsapp_number"] || process.env.WHATSAPP_NUMBER || ""
+  const contactPhone = contactMap["contact_phone"] || process.env.WHATSAPP_NUMBER || ""
 
   const announcementMap = await getCached("announcementSettings", 300_000, async () => {
     const settings = await db.setting.findMany({ where: { group: "announcement" } })

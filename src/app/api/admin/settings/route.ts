@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
   await Promise.all(upserts)
   clearCache("siteSettings")
   clearCache("publicSettings")
+  clearCache("contactSettings")
 
   return NextResponse.json({ success: true })
 }
