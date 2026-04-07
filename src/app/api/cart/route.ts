@@ -15,24 +15,29 @@ export async function GET() {
     return NextResponse.json({ items: [], totalUsd: 0, totalTl: 0 })
   }
 
-  const cart = await db.cart.findUnique({
-    where: { userId: session.user.id },
-    include: {
-      items: {
-        include: {
-          product: {
-            include: {
-              images: {
-                take: 1,
-                orderBy: [{ isFeatured: "desc" }, { sortOrder: "asc" }],
+  const [cart, rateSetting] = await Promise.all([
+    db.cart.findUnique({
+      where: { userId: session.user.id },
+      include: {
+        items: {
+          include: {
+            product: {
+              include: {
+                images: {
+                  take: 1,
+                  orderBy: [{ isFeatured: "desc" }, { sortOrder: "asc" }],
+                },
+                variations: { where: { status: true } },
               },
-              variations: { where: { status: true } },
             },
           },
         },
       },
-    },
-  })
+    }),
+    db.setting.findUnique({ where: { key: "usd_rate" } }),
+  ])
+
+  const usdRate = rateSetting ? Number(rateSetting.value) : 1
 
   if (!cart) {
     return NextResponse.json({ items: [], totalUsd: 0, totalTl: 0 })
@@ -43,10 +48,11 @@ export async function GET() {
       ? item.product.variations.find((v) => v.id === item.variationId)
       : null
 
-    const priceUsd = Number(item.product.salePriceUsd ?? item.product.priceUsd) +
-      (variation?.priceDiff ? Number(variation.priceDiff) : 0)
-    const priceTl = Number(item.product.salePriceTl ?? item.product.priceTl) +
-      (variation?.priceDiff ? Number(variation.priceDiff) : 0)
+    const priceUsd = variation?.salePrice
+      ? Number(variation.salePrice)
+      : Number(item.product.salePriceUsd ?? item.product.priceUsd) +
+        (variation?.priceDiff ? Number(variation.priceDiff) : 0)
+    const priceTl = priceUsd * usdRate
 
     return {
       id: item.id,

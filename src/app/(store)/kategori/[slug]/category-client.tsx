@@ -19,22 +19,19 @@ import { ProductFilters } from "@/components/store/product-filters"
 import { ProductSort } from "@/components/store/product-sort"
 import { Pagination } from "@/components/store/pagination"
 
-interface CategoryInfo {
+interface CategoryNode {
   id: string
   name: string
   slug: string
   description?: string | null
   image?: string | null
   parentId?: string | null
-  children: Array<{
-    id: string
-    name: string
-    slug: string
-    image?: string | null
-    description?: string | null
-    _count: { products: number }
-  }>
-  parent?: { id: string; name: string; slug: string } | null
+  _count: { products: number }
+  children: CategoryNode[]
+}
+
+interface CategoryInfo extends CategoryNode {
+  ancestors: Array<{ id: string; name: string; slug: string }>
 }
 
 interface FiltersData {
@@ -194,24 +191,28 @@ function CategoryPageContent() {
         const res = await fetch("/api/categories")
         if (!res.ok) return
         const data = await res.json()
-        // Find this category in the tree
-        const allCats = data.categories as Array<CategoryInfo & { children: CategoryInfo[] }>
-        for (const cat of allCats) {
-          if (cat.slug === slug) {
-            setCategoryInfo({ ...cat, parent: null })
-            return
-          }
-          for (const child of cat.children || []) {
-            if (child.slug === slug) {
-              setCategoryInfo({
-                ...child,
-                children: [],
-                parent: { id: cat.id, name: cat.name, slug: cat.slug },
-              })
-              return
+
+        // Recursive search — returns the found node + its ancestor chain
+        const findCategory = (
+          nodes: CategoryNode[],
+          targetSlug: string,
+          ancestors: Array<{ id: string; name: string; slug: string }>
+        ): CategoryInfo | null => {
+          for (const node of nodes) {
+            if (node.slug === targetSlug) {
+              return { ...node, ancestors }
             }
+            const found = findCategory(node.children || [], targetSlug, [
+              ...ancestors,
+              { id: node.id, name: node.name, slug: node.slug },
+            ])
+            if (found) return found
           }
+          return null
         }
+
+        const found = findCategory(data.categories as CategoryNode[], slug, [])
+        if (found) setCategoryInfo(found)
       } catch {
         // ignore
       }
@@ -255,15 +256,12 @@ function CategoryPageContent() {
     fetchProducts()
   }, [page, sort, search, slug, minPrice, maxPrice, brandId, inStock])
 
-  // Build breadcrumb
-  const breadcrumbItems = []
-  if (categoryInfo?.parent) {
-    breadcrumbItems.push({
-      label: categoryInfo.parent.name,
-      href: `/kategori/${categoryInfo.parent.slug}`,
-    })
-  }
-  breadcrumbItems.push({ label: categoryInfo?.name || slug })
+  // Build breadcrumb — full ancestor chain
+  const breadcrumbItems = (categoryInfo?.ancestors || []).map((a) => ({
+    label: a.name,
+    href: `/kategori/${a.slug}`,
+  }))
+  breadcrumbItems.push({ label: categoryInfo?.name || slug, href: `/kategori/${slug}` })
 
   const filterSidebar = (
     <ProductFilters

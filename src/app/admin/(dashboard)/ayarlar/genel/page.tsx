@@ -34,6 +34,8 @@ export default function AyarlarGenelPage() {
   const [settings, setSettings] = useState<Settings>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
+  const [savedMsg, setSavedMsg] = useState("")
+  const [errorMsg, setErrorMsg] = useState("")
 
   useEffect(() => {
     fetch("/api/admin/settings")
@@ -68,16 +70,28 @@ export default function AyarlarGenelPage() {
 
   async function saveGroup(keys: string[]) {
     setSaving(keys[0])
+    setSavedMsg("")
+    setErrorMsg("")
     const payload: Settings = {}
-    for (const k of keys) {
-      payload[k] = get(k)
+    for (const k of keys) payload[k] = get(k)
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      if (res.ok) {
+        setSavedMsg("Kaydedildi!")
+        setTimeout(() => setSavedMsg(""), 3000)
+      } else {
+        const err = await res.json()
+        setErrorMsg(err.error || "Kayıt başarısız")
+      }
+    } catch {
+      setErrorMsg("Bağlantı hatası")
+    } finally {
+      setSaving(null)
     }
-    await fetch("/api/admin/settings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-    setSaving(null)
   }
 
   if (loading) {
@@ -90,6 +104,16 @@ export default function AyarlarGenelPage() {
         <h1 className="text-2xl font-bold">Site Ayarları</h1>
         <p className="text-muted-foreground">Platform geneli ayarları yönetin</p>
       </div>
+      {savedMsg && (
+        <div className="rounded-md bg-green-500/15 px-4 py-2 text-sm font-medium text-green-400">
+          ✓ {savedMsg}
+        </div>
+      )}
+      {errorMsg && (
+        <div className="rounded-md bg-red-500/15 px-4 py-2 text-sm font-medium text-red-400">
+          ✗ {errorMsg}
+        </div>
+      )}
 
       <Tabs defaultValue="genel">
         <TabsList className="mb-6">

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { toast } from "sonner"
-import { Loader2, Check, X } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth"
 import { Button } from "@/components/ui/button"
@@ -42,53 +42,6 @@ const SECURITY_QUESTIONS = [
   "En sevdiğiniz film nedir?",
   "Doğduğunuz şehir neresidir?",
 ]
-
-function PasswordStrengthIndicator({ password }: { password: string }) {
-  const requirements = [
-    { label: "En az 8 karakter", met: password.length >= 8 },
-    { label: "En az 1 büyük harf", met: /[A-Z]/.test(password) },
-    { label: "En az 1 rakam", met: /[0-9]/.test(password) },
-    { label: "En az 1 özel karakter", met: /[^A-Za-z0-9]/.test(password) },
-  ]
-
-  const metCount = requirements.filter((r) => r.met).length
-  const strengthPercent = (metCount / requirements.length) * 100
-
-  return (
-    <div className="space-y-2 mt-2">
-      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-300"
-          style={{
-            width: `${strengthPercent}%`,
-            backgroundColor:
-              metCount <= 1
-                ? "var(--destructive)"
-                : metCount <= 2
-                  ? "#f59e0b"
-                  : metCount <= 3
-                    ? "#3b82f6"
-                    : "#22c55e",
-          }}
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-1">
-        {requirements.map((req) => (
-          <div key={req.label} className="flex items-center gap-1.5 text-xs">
-            {req.met ? (
-              <Check className="h-3 w-3 text-green-500 shrink-0" />
-            ) : (
-              <X className="h-3 w-3 text-muted-foreground shrink-0" />
-            )}
-            <span className={req.met ? "text-green-600" : "text-muted-foreground"}>
-              {req.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 interface Captcha {
   token: string
@@ -140,7 +93,6 @@ export function RegisterForm() {
     },
   })
 
-  const watchPassword = watch("password", "")
   const watchCityId = watch("cityId", "")
   const watchKvkk = watch("kvkkConsent")
 
@@ -380,7 +332,6 @@ export function RegisterForm() {
               aria-invalid={!!errors.password}
               className="h-10"
             />
-            {watchPassword && <PasswordStrengthIndicator password={watchPassword} />}
             {errors.password && (
               <p className="text-sm text-destructive">{errors.password.message}</p>
             )}

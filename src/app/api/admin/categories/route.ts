@@ -15,20 +15,27 @@ export async function GET() {
     return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
   }
   try {
-    const categories = await db.category.findMany({
-      include: {
-        children: {
-          orderBy: { sortOrder: "asc" },
-          include: {
-            _count: { select: { products: true } },
-          },
-        },
-        _count: { select: { products: true } },
-      },
-      where: { parentId: null },
+    // Fetch all categories flat, then build tree (supports unlimited depth)
+    const all = await db.category.findMany({
+      include: { _count: { select: { products: true } } },
       orderBy: { sortOrder: "asc" },
     })
-    return NextResponse.json(categories)
+
+    type CatNode = typeof all[number] & { children: CatNode[] }
+    const map = new Map<string, CatNode>()
+    for (const cat of all) map.set(cat.id, { ...cat, children: [] })
+
+    const roots: CatNode[] = []
+    for (const cat of all) {
+      const node = map.get(cat.id)!
+      if (cat.parentId && map.has(cat.parentId)) {
+        map.get(cat.parentId)!.children.push(node)
+      } else {
+        roots.push(node)
+      }
+    }
+
+    return NextResponse.json(roots)
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 })
   }

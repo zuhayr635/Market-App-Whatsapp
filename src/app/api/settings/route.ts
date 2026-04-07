@@ -11,6 +11,8 @@ const PUBLIC_KEYS = [
   "contact_address",
   "working_hours",
   "whatsapp_number",
+  "whatsapp_template",
+  "whatsapp_float_enabled",
   "map_lat",
   "map_lng",
   "site_name",

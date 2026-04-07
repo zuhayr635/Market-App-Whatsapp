@@ -132,6 +132,10 @@ export default async function ProductDetailPage({ params }: Props) {
     data: { viewCount: { increment: 1 } },
   }).catch(() => {})
 
+  // Get WhatsApp number from settings
+  const wpSetting = await db.setting.findUnique({ where: { key: "whatsapp_number" } }).catch(() => null)
+  const whatsappNumber = wpSetting?.value || ""
+
   // Get variation types for rendering
   const variationTypes = await db.variationType.findMany({
     where: { status: true },
@@ -263,7 +267,7 @@ export default async function ProductDetailPage({ params }: Props) {
     }))
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-3 py-4 sm:px-4 sm:py-6">
       {/* Breadcrumb */}
       <Breadcrumb items={breadcrumbItems} />
 
@@ -273,6 +277,7 @@ export default async function ProductDetailPage({ params }: Props) {
           product={serializedProduct}
           variationTypes={serializedVariationTypes}
           isLoggedIn={isLoggedIn}
+          whatsappNumber={whatsappNumber}
         />
       </div>
 

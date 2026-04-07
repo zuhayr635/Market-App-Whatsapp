@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -19,7 +19,7 @@ model User {
   passwordHash      String
   cityId            Int?
   districtId        Int?
-  address           String?    @db.Text
+  address           String?
   securityQuestion  String?
   securityAnswer    String?
   emailVerified     DateTime?
@@ -62,7 +62,7 @@ model Address {
   title       String
   cityId      Int
   districtId  Int
-  fullAddress String  @db.Text
+  fullAddress String
   isDefault   Boolean @default(false)
   status      Boolean @default(true)
 
@@ -126,7 +126,7 @@ model AdminLog {
   id        String   @id @default(cuid())
   adminId   String
   action    String
-  detail    String?  @db.Text
+  detail    String?
   ip        String?
   createdAt DateTime @default(now())
 
@@ -154,11 +154,11 @@ model Category {
   id          String  @id @default(cuid())
   parentId    String?
   name        String
-  description String? @db.Text
+  description String?
   image       String?
   slug        String  @unique
   seoTitle    String?
-  seoDesc     String? @db.Text
+  seoDesc     String?
   sortOrder   Int     @default(0)
   status      Boolean @default(true)
 
@@ -175,17 +175,17 @@ model Product {
   id              String   @id @default(cuid())
   name            String
   slug            String   @unique
-  shortDesc       String?  @db.Text
-  fullDesc        String?  @db.LongText
+  shortDesc       String?
+  fullDesc        String?
   sku             String   @unique
   barcode         String?
   brandId         String?
   manufacturer    String?
   originCountry   String?
-  priceUsd        Decimal  @db.Decimal(10, 2)
-  priceTl         Decimal  @db.Decimal(10, 2)
-  salePriceUsd    Decimal? @db.Decimal(10, 2)
-  salePriceTl     Decimal? @db.Decimal(10, 2)
+  priceUsd        Decimal
+  priceTl         Decimal
+  salePriceUsd    Decimal?
+  salePriceTl     Decimal?
   saleStart       DateTime?
   saleEnd         DateTime?
   vatRate         Int      @default(18)
@@ -193,22 +193,22 @@ model Product {
   stockTracking   Boolean  @default(true)
   stockQty        Int      @default(0)
   lowStockThreshold Int    @default(5)
-  weight          Decimal? @db.Decimal(8, 2)
-  width           Decimal? @db.Decimal(8, 2)
-  height          Decimal? @db.Decimal(8, 2)
-  depth           Decimal? @db.Decimal(8, 2)
+  weight          Decimal?
+  width           Decimal?
+  height          Decimal?
+  depth           Decimal?
   isFeatured      Boolean  @default(false)
   isNew           Boolean  @default(false)
   isBestSeller    Boolean  @default(false)
   seoTitle        String?
-  seoDesc         String?  @db.Text
+  seoDesc         String?
   status          ProductStatus @default(DRAFT)
   visibility      ProductVisibility @default(PUBLIC)
   publishAt       DateTime?
   sortOrder       Int      @default(0)
   viewCount       Int      @default(0)
-  customCss       String?  @db.Text
-  customJs        String?  @db.Text
+  customCss       String?
+  customJs        String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -353,7 +353,7 @@ model ProductTab {
   id        String  @id @default(cuid())
   productId String
   title     String
-  content   String  @db.LongText
+  content   String
   icon      String?
   sortOrder Int     @default(0)
   status    Boolean @default(true)
@@ -420,10 +420,10 @@ model ProductVariation {
   productId     String
   combination   Json
   sku           String?
-  priceDiff     Decimal? @db.Decimal(10, 2)
-  salePrice     Decimal? @db.Decimal(10, 2)
+  priceDiff     Decimal?
+  salePrice     Decimal?
   stock         Int      @default(0)
-  weight        Decimal? @db.Decimal(8, 2)
+  weight        Decimal?
   imageUrl      String?
   description   String?
   status        Boolean  @default(true)
@@ -437,7 +437,7 @@ model ProductVariationValueImage {
   id               String @id @default(cuid())
   productId        String
   variationValueId String
-  imageUrl         String @db.Text
+  imageUrl         String
 
   product        Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
   variationValue VariationValue @relation(fields: [variationValueId], references: [id], onDelete: Cascade)
@@ -479,7 +479,7 @@ model CartItem {
   productId   String
   variationId String?
   quantity    Int     @default(1)
-  unitPrice   Decimal @db.Decimal(10, 2)
+  unitPrice   Decimal
 
   cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
@@ -494,16 +494,16 @@ model Order {
   orderNo     String      @unique
   userId      String
   status      OrderStatus @default(PENDING)
-  totalTl     Decimal     @db.Decimal(10, 2)
-  totalUsd    Decimal     @db.Decimal(10, 2)
+  totalTl     Decimal
+  totalUsd    Decimal
   addressJson Json?
-  orderNote   String?     @db.Text
-  adminNote   String?     @db.Text
+  orderNote   String?
+  adminNote   String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
   couponCode      String?
-  discountAmount  Decimal?    @db.Decimal(10, 2)
+  discountAmount  Decimal?
   stripeSessionId String?
   stripePaymentStatus String?
 
@@ -542,8 +542,8 @@ model OrderItem {
   productName   String
   variationJson Json?
   quantity      Int
-  unitPrice     Decimal @db.Decimal(10, 2)
-  totalPrice    Decimal @db.Decimal(10, 2)
+  unitPrice     Decimal
+  totalPrice    Decimal
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
@@ -583,10 +583,10 @@ model Receipt {
   fileUrl     String
   payerName   String?
   paymentDate DateTime?
-  amount      Decimal?      @db.Decimal(10, 2)
-  note        String?       @db.Text
+  amount      Decimal?
+  note        String?
   status      ReceiptStatus @default(PENDING)
-  rejectReason String?      @db.Text
+  rejectReason String?
   uploadedAt  DateTime      @default(now())
   reviewedAt  DateTime?
 
@@ -696,9 +696,9 @@ model Page {
   id          String  @id @default(cuid())
   title       String
   slug        String  @unique
-  content     String  @db.LongText
+  content     String
   seoTitle    String?
-  seoDesc     String? @db.Text
+  seoDesc     String?
   status      Boolean @default(true)
 
   @@map("pages")
@@ -707,7 +707,7 @@ model Page {
 model Faq {
   id        String  @id @default(cuid())
   question  String
-  answer    String  @db.Text
+  answer    String
   sortOrder Int     @default(0)
   status    Boolean @default(true)
 
@@ -719,7 +719,7 @@ model ContactForm {
   name      String
   email     String
   subject   String
-  message   String   @db.Text
+  message   String
   isRead    Boolean  @default(false)
   isReplied Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -732,7 +732,7 @@ model ContactForm {
 model Setting {
   id    String @id @default(cuid())
   key   String @unique
-  value String @db.Text
+  value String
   group String @default("general")
 
   @@index([group])
@@ -751,7 +751,7 @@ model ThemeSetting {
 model ExchangeRate {
   id        String   @id @default(cuid())
   currency  String
-  rate      Decimal  @db.Decimal(10, 4)
+  rate      Decimal
   updatedAt DateTime @default(now())
 
   @@map("exchange_rates")
@@ -761,8 +761,8 @@ model EmailTemplate {
   id        String @id @default(cuid())
   name      String @unique
   subject   String
-  content   String @db.LongText
-  variables String? @db.Text
+  content   String
+  variables String?
 
   @@map("email_templates")
 }
@@ -771,7 +771,7 @@ model Notification {
   id        String   @id @default(cuid())
   type      String
   title     String
-  message   String   @db.Text
+  message   String
   link      String?
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -787,8 +787,8 @@ model Coupon {
   id              String      @id @default(cuid())
   code            String      @unique
   type            CouponType  @default(PERCENTAGE)
-  value           Decimal     @db.Decimal(10, 2)
-  minOrderAmount  Decimal?    @db.Decimal(10, 2)
+  value           Decimal
+  minOrderAmount  Decimal?
   maxUsageCount   Int?
   usedCount       Int         @default(0)
   isActive        Boolean     @default(true)

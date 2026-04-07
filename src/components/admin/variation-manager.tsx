@@ -978,21 +978,26 @@ export function VariationManager({
                           className="border-b last:border-b-0 hover:bg-gray-50/50"
                         >
                           <td className="px-3 py-2 text-center">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setImagePickerTarget({ type: "combination", tempId: row.tempId })
-                                setImagePickerOpen(true)
-                              }}
-                              className="relative size-8 rounded border bg-gray-50 hover:bg-gray-100 flex items-center justify-center overflow-hidden mx-auto"
-                            >
-                              {row.imageUrl ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={row.imageUrl} alt="" className="w-full h-full object-cover" />
-                              ) : (
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setImagePickerTarget({ type: "combination", tempId: row.tempId })
+                                  setImagePickerOpen(true)
+                                }}
+                                className="relative size-7 rounded border bg-gray-50 hover:bg-gray-100 flex items-center justify-center flex-shrink-0"
+                              >
                                 <Camera className="size-3.5 text-muted-foreground" />
+                              </button>
+                              {row.imageUrl && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={row.imageUrl}
+                                  alt=""
+                                  className="size-7 rounded border object-cover flex-shrink-0"
+                                />
                               )}
-                            </button>
+                            </div>
                           </td>
                           <td className="px-3 py-2">
                             <div className="flex items-center gap-1.5">

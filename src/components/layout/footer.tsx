@@ -3,7 +3,11 @@
 import { Phone, Mail, MapPin, Clock, MessageCircle } from "lucide-react"
 import Link from "next/link"
 
-export function Footer({ siteName = "MARKET" }: { siteName?: string }) {
+export function Footer({ siteName = "MARKET", whatsappNumber = "", contactPhone = "" }: { siteName?: string; whatsappNumber?: string; contactPhone?: string }) {
+  const wpNum = whatsappNumber.replace(/\D/g, "")
+  const waHref = wpNum ? `https://wa.me/${wpNum}` : "#"
+  const phoneDisplay = contactPhone || whatsappNumber || ""
+  const telHref = phoneDisplay ? `tel:${phoneDisplay.replace(/\s/g, "")}` : "#"
   return (
     <footer style={{ backgroundColor: '#060709', borderTop: '1px solid rgba(255,102,0,0.1)' }}>
       <div className="mx-auto max-w-7xl px-6 pt-16 pb-8">
@@ -19,16 +23,18 @@ export function Footer({ siteName = "MARKET" }: { siteName?: string }) {
             <p className="text-sm leading-relaxed" style={{ color: '#4A4640' }}>
               Kaliteli ürünler, uygun fiyatlar. WhatsApp üzerinden kolay ve güvenli alışveriş.
             </p>
-            <a
-              href="https://wa.me/905551234567"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-90"
-              style={{ backgroundColor: '#1A2E1F', color: '#25D366', border: '1px solid rgba(37,211,102,0.2)' }}
-            >
-              <MessageCircle className="size-4" />
-              WhatsApp ile Ulaşın
-            </a>
+            {wpNum && (
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-90"
+                style={{ backgroundColor: '#1A2E1F', color: '#25D366', border: '1px solid rgba(37,211,102,0.2)' }}
+              >
+                <MessageCircle className="size-4" />
+                WhatsApp ile Ulaşın
+              </a>
+            )}
           </div>
 
           {/* Links */}
@@ -92,13 +98,15 @@ export function Footer({ siteName = "MARKET" }: { siteName?: string }) {
                 <MapPin className="mt-0.5 size-4 shrink-0" style={{ color: '#4A4640' }} />
                 <span className="text-sm" style={{ color: '#4A4640' }}>İstanbul, Türkiye</span>
               </div>
-              <a href="tel:+905551234567" className="flex items-center gap-3 text-sm transition-colors" style={{ color: '#4A4640' }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--market-primary)')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#4A4640')}
-              >
-                <Phone className="size-4 shrink-0" style={{ color: '#4A4640' }} />
-                +90 555 123 4567
-              </a>
+              {phoneDisplay && (
+                <a href={telHref} className="flex items-center gap-3 text-sm transition-colors" style={{ color: '#4A4640' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--market-primary)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#4A4640')}
+                >
+                  <Phone className="size-4 shrink-0" style={{ color: '#4A4640' }} />
+                  {phoneDisplay}
+                </a>
+              )}
               <a href="mailto:info@market.com" className="flex items-center gap-3 text-sm transition-colors" style={{ color: '#4A4640' }}
                 onMouseEnter={e => (e.currentTarget.style.color = 'var(--market-primary)')}
                 onMouseLeave={e => (e.currentTarget.style.color = '#4A4640')}

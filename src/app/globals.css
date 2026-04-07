@@ -258,17 +258,19 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    overflow-x: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 700;
+  }
   body {
+    overflow-x: hidden;
     background-color: var(--background);
     color: var(--foreground);
     font-family: Arial, Helvetica, sans-serif;
     font-weight: 700;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-  html {
-    font-family: Arial, Helvetica, sans-serif;
-    font-weight: 700;
   }
   h1, h2, h3, h4 {
     font-family: Arial, Helvetica, sans-serif;

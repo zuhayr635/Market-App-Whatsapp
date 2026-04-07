@@ -20,25 +20,30 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const { addressId, orderNote, addressText, couponCode, discountAmount } = body
 
-  // Get cart with items
-  const cart = await db.cart.findUnique({
-    where: { userId: session.user.id },
-    include: {
-      items: {
-        include: {
-          product: {
-            include: {
-              images: {
-                take: 1,
-                orderBy: [{ isFeatured: "desc" }, { sortOrder: "asc" }],
+  // Get cart with items and USD rate
+  const [cart, rateSetting] = await Promise.all([
+    db.cart.findUnique({
+      where: { userId: session.user.id },
+      include: {
+        items: {
+          include: {
+            product: {
+              include: {
+                images: {
+                  take: 1,
+                  orderBy: [{ isFeatured: "desc" }, { sortOrder: "asc" }],
+                },
+                variations: { where: { status: true } },
               },
-              variations: { where: { status: true } },
             },
           },
         },
       },
-    },
-  })
+    }),
+    db.setting.findUnique({ where: { key: "usd_rate" } }),
+  ])
+
+  const usdRate = rateSetting ? Number(rateSetting.value) : 1
 
   if (!cart || cart.items.length === 0) {
     return NextResponse.json({ error: "Sepetiniz boş" }, { status: 400 })
@@ -71,10 +76,11 @@ export async function POST(req: NextRequest) {
       ? item.product.variations.find((v) => v.id === item.variationId)
       : null
 
-    const priceUsd = Number(item.product.salePriceUsd ?? item.product.priceUsd) +
-      (variation?.priceDiff ? Number(variation.priceDiff) : 0)
-    const priceTl = Number(item.product.salePriceTl ?? item.product.priceTl) +
-      (variation?.priceDiff ? Number(variation.priceDiff) : 0)
+    const priceUsd = variation?.salePrice
+      ? Number(variation.salePrice)
+      : Number(item.product.salePriceUsd ?? item.product.priceUsd) +
+        (variation?.priceDiff ? Number(variation.priceDiff) : 0)
+    const priceTl = priceUsd * usdRate
 
     const lineUsd = priceUsd * item.quantity
     const lineTl = priceTl * item.quantity

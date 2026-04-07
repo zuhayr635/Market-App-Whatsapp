@@ -15,10 +15,7 @@ export const registerSchema = z.object({
   address: z.string().min(10, "Adres en az 10 karakter olmalı"),
   password: z
     .string()
-    .min(8, "Şifre en az 8 karakter olmalı")
-    .regex(/[A-Z]/, "En az 1 büyük harf içermeli")
-    .regex(/[0-9]/, "En az 1 rakam içermeli")
-    .regex(/[^A-Za-z0-9]/, "En az 1 özel karakter içermeli"),
+    .min(6, "Şifre en az 6 karakter olmalı"),
   passwordConfirm: z.string().min(1, "Şifre tekrarı zorunludur"),
   securityQuestion: z.string(),
   securityAnswer: z.string(),

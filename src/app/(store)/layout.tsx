@@ -38,6 +38,15 @@ export default async function StoreLayout({ children }: { children: React.ReactN
     })
   })
 
+  const contactMap = await getCached("contactSettings", 300_000, async () => {
+    const settings = await db.setting.findMany({ where: { key: { in: ["whatsapp_number", "contact_phone"] } } })
+    const map: Record<string, string> = {}
+    for (const s of settings) map[s.key] = s.value
+    return map
+  })
+  const whatsappNumber = contactMap["whatsapp_number"] || ""
+  const contactPhone = contactMap["contact_phone"] || ""
+
   const announcementMap = await getCached("announcementSettings", 300_000, async () => {
     const settings = await db.setting.findMany({ where: { group: "announcement" } })
     const map: Record<string, string> = {}
@@ -59,9 +68,9 @@ export default async function StoreLayout({ children }: { children: React.ReactN
             color={announcementColor}
           />
         )}
-        <Header siteName={siteName} categories={categories} />
+        <Header siteName={siteName} categories={categories} whatsappNumber={whatsappNumber} contactPhone={contactPhone} />
         <main className="flex-1">{children}</main>
-        <Footer siteName={siteName} />
+        <Footer siteName={siteName} whatsappNumber={whatsappNumber} contactPhone={contactPhone} />
         <WhatsAppFloat />
         <CookieConsent />
         <PopupModal />

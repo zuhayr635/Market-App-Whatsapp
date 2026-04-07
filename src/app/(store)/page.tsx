@@ -1,9 +1,10 @@
 import { ArrowRight, MessageCircle, Shield, Truck, RotateCcw, Sparkles, ShoppingBag, Zap } from "lucide-react"
 import Link from "next/link"
-import Image from "next/image"
 import { db } from "@/lib/db"
 import { getCached } from "@/lib/cache"
 import { HeroSlider } from "@/components/store/hero-slider"
+import { HomeProductGrid } from "@/components/store/home-product-grid"
+import type { ProductCardData } from "@/components/store/product-card"
 
 async function getBanners() {
   return getCached("homeBanners", 60_000, async () => {
@@ -24,27 +25,58 @@ async function getBanners() {
   }).catch(() => [])
 }
 
-async function getLatestProducts() {
+async function getLatestProducts(): Promise<ProductCardData[]> {
   return getCached("latestProducts", 60_000, async () => {
-    return db.product.findMany({
+    const products = await db.product.findMany({
       where: { status: "PUBLISHED" },
-      include: { images: { take: 1, orderBy: { sortOrder: "asc" } } },
+      include: {
+        images: { take: 1, orderBy: { sortOrder: "asc" } },
+        brand: true,
+        categories: { include: { category: true } },
+      },
       take: 10,
       orderBy: { createdAt: "desc" },
     })
+    return products.map(serializeProduct)
   }).catch(() => [])
 }
 
-async function getFeaturedProducts() {
+async function getFeaturedProducts(): Promise<ProductCardData[]> {
   return getCached("featuredProducts", 60_000, async () => {
     const products = await db.product.findMany({
       where: { status: "PUBLISHED", isFeatured: true },
-      include: { images: { take: 1, orderBy: { sortOrder: "asc" } } },
+      include: {
+        images: { take: 1, orderBy: { sortOrder: "asc" } },
+        brand: true,
+        categories: { include: { category: true } },
+      },
       take: 10,
       orderBy: { createdAt: "desc" },
     })
-    return products
+    return products.map(serializeProduct)
   }).catch(() => [])
+}
+
+function serializeProduct(p: any): ProductCardData {
+  return {
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    shortDesc: p.shortDesc ?? null,
+    priceUsd: Number(p.priceUsd),
+    priceTl: Number(p.priceTl),
+    salePriceUsd: p.salePriceUsd != null ? Number(p.salePriceUsd) : null,
+    salePriceTl: p.salePriceTl != null ? Number(p.salePriceTl) : null,
+    stockQty: p.stockQty,
+    isNew: p.isNew,
+    isFeatured: p.isFeatured,
+    isBestSeller: p.isBestSeller,
+    images: p.images.map((img: any) => ({ id: img.id, url: img.url, altText: img.altText })),
+    brand: p.brand ? { id: p.brand.id, name: p.brand.name, slug: p.brand.slug } : null,
+    categories: p.categories.map((pc: any) => ({
+      category: { id: pc.category.id, name: pc.category.name, slug: pc.category.slug },
+    })),
+  }
 }
 
 async function getCategories() {
@@ -56,46 +88,6 @@ async function getCategories() {
     })
     return categories
   }).catch(() => [])
-}
-
-function ProductCard({ p }: { p: any }) {
-  return (
-    <Link href={`/urun/${p.slug}`} className="group">
-      <div className="overflow-hidden rounded-xl bg-[#12141A] border border-[rgba(255,102,0,0.12)] transition-all duration-300 hover:border-[rgba(255,102,0,0.32)] hover:shadow-[0_4px_20px_rgba(255,102,0,0.07)]">
-        <div className="relative aspect-[4/3] overflow-hidden" style={{ backgroundColor: '#1A1D27' }}>
-          {p.images?.[0]?.url ? (
-            <Image
-              src={p.images[0].url}
-              alt={p.name}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-              sizes="(max-width: 1024px) 50vw, 20vw"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <ShoppingBag className="size-8" style={{ color: '#2A2A35' }} />
-            </div>
-          )}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-            style={{ backgroundColor: 'rgba(10,11,15,0.3)' }}>
-            <span className="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest"
-              style={{ backgroundColor: 'rgba(255,102,0,0.9)', color: '#0A0B0F' }}>
-              İncele
-            </span>
-          </div>
-        </div>
-        <div className="p-3">
-          <h3 className="mb-1 line-clamp-2 text-xs font-medium leading-snug transition-colors group-hover:opacity-80"
-            style={{ color: '#D4CFC8' }}>
-            {p.name}
-          </h3>
-          <p className="text-sm font-semibold leading-none" style={{ color: 'var(--gold)' }}>
-            {Number(p.priceTl).toFixed(2)} ₺
-          </p>
-        </div>
-      </div>
-    </Link>
-  )
 }
 
 function ProductSkeleton() {
@@ -117,12 +109,20 @@ function ProductSkeleton() {
   )
 }
 
+async function getWhatsappNumber() {
+  return getCached("homeWpNumber", 300_000, async () => {
+    const s = await db.setting.findUnique({ where: { key: "whatsapp_number" } })
+    return s?.value?.replace(/\D/g, "") || ""
+  }).catch(() => "")
+}
+
 export default async function HomePage() {
-  const [banners, latestProducts, featuredProducts, categories] = await Promise.all([
+  const [banners, latestProducts, featuredProducts, categories, wpNum] = await Promise.all([
     getBanners(),
     getLatestProducts(),
     getFeaturedProducts(),
     getCategories(),
+    getWhatsappNumber(),
   ])
 
   return (
@@ -176,7 +176,7 @@ export default async function HomePage() {
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                 </Link>
                 <a
-                  href="https://wa.me/905551234567"
+                  href={wpNum ? `https://wa.me/${wpNum}` : "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group inline-flex items-center justify-center gap-2.5 rounded-xl px-8 py-4 text-sm font-bold uppercase tracking-widest transition-all hover:border-[rgba(37,211,102,0.3)] hover:text-[#25D366] active:scale-[0.97]"
@@ -240,11 +240,7 @@ export default async function HomePage() {
         </div>
 
         {latestProducts.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-            {latestProducts.map((p: any) => (
-              <ProductCard key={p.id} p={p} />
-            ))}
-          </div>
+          <HomeProductGrid products={latestProducts} />
         ) : (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -280,11 +276,7 @@ export default async function HomePage() {
         </div>
 
         {featuredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-            {featuredProducts.map((p: any) => (
-              <ProductCard key={p.id} p={p} />
-            ))}
-          </div>
+          <HomeProductGrid products={featuredProducts} />
         ) : (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -381,7 +373,7 @@ export default async function HomePage() {
               WhatsApp üzerinden bize ulaşın, ürünler hakkında detaylı bilgi alın ve siparişinizi kolayca oluşturun.
             </p>
             <a
-              href="https://wa.me/905551234567"
+              href={wpNum ? `https://wa.me/${wpNum}` : "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="group inline-flex items-center gap-3 rounded-xl px-8 py-4 text-sm font-bold uppercase tracking-widest transition-all hover:opacity-90 active:scale-[0.97]"

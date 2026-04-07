@@ -126,6 +126,7 @@ interface ProductDetailClientProps {
   product: SerializedProduct
   variationTypes: VariationType[]
   isLoggedIn: boolean
+  whatsappNumber?: string
 }
 
 function formatFileSize(bytes: number): string {
@@ -180,6 +181,7 @@ export function ProductDetailClient({
   product,
   variationTypes,
   isLoggedIn,
+  whatsappNumber = "",
 }: ProductDetailClientProps) {
   const { rate } = useContext(CurrencyContext)
   const [isFavorited, setIsFavorited] = useState(false)
@@ -269,8 +271,9 @@ export function ProductDetailClient({
     const text = encodeURIComponent(
       `Merhaba, bu ürün hakkında bilgi almak istiyorum: ${product.name}\n${typeof window !== "undefined" ? window.location.href : ""}`
     )
-    return `https://wa.me/?text=${text}`
-  }, [product.name])
+    const wpNum = whatsappNumber.replace(/\D/g, "")
+    return wpNum ? `https://wa.me/${wpNum}?text=${text}` : `https://wa.me/?text=${text}`
+  }, [product.name, whatsappNumber])
 
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
@@ -361,9 +364,9 @@ export function ProductDetailClient({
   return (
     <>
       {/* Main two-column layout */}
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-4 lg:gap-8 lg:grid-cols-2">
         {/* Left: Image Gallery */}
-        <div>
+        <div className="min-w-0">
           <ImageGallery
             images={product.images}
             productName={product.name}
@@ -372,10 +375,10 @@ export function ProductDetailClient({
         </div>
 
         {/* Right: Product Info */}
-        <div className="space-y-5">
+        <div className="space-y-5 min-w-0">
           {/* Name */}
           <div>
-            <h1 className="text-2xl font-bold leading-tight text-foreground lg:text-3xl">
+            <h1 className="text-xl font-bold leading-tight text-foreground sm:text-2xl lg:text-3xl">
               {product.name}
             </h1>
             <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -410,7 +413,7 @@ export function ProductDetailClient({
                   {(originalPriceUsd * rate).toFixed(2)} ₺
                 </span>
               )}
-              <span className={`text-3xl font-bold ${hasDiscount && saleActive ? "text-red-600" : "text-foreground"}`}>
+              <span className={`text-2xl font-bold sm:text-3xl ${hasDiscount && saleActive ? "text-red-600" : "text-foreground"}`}>
                 {currentPriceTl.toFixed(2)} ₺
               </span>
               {hasDiscount && saleActive && discountPercent > 0 && (
@@ -644,10 +647,10 @@ export function ProductDetailClient({
                 <tbody>
                   {product.attributes.map((attr, index) => (
                     <tr key={attr.id} className={index % 2 === 0 ? "bg-muted/50" : "bg-background"}>
-                      <td className="px-4 py-2.5 font-medium text-foreground w-48">
+                      <td className="px-3 py-2.5 font-medium text-foreground w-1/3 min-w-[100px]">
                         {attr.attributeType.name}
                       </td>
-                      <td className="px-4 py-2.5 text-muted-foreground">
+                      <td className="px-3 py-2.5 text-muted-foreground break-words">
                         {attr.value}
                       </td>
                     </tr>

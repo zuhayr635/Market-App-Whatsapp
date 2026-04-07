@@ -88,29 +88,36 @@ export function buildWhatsAppMessage(
   orderNo?: string,
   coupon?: { code: string; discount: number },
 ): string {
-  let msg = `🛒 *Yeni Sipariş*${orderNo ? ` - ${orderNo}` : ""}\n\n`
-  msg += `📦 *Ürünler:*\n`
+  const line = "─────────────────────"
+
+  let msg = `🛒 *YENİ SİPARİŞ*`
+  if (orderNo) msg += ` | ${orderNo}`
+  msg += `\n${line}\n\n`
 
   items.forEach((item, i) => {
     const variationStr = item.variation
-      ? ` (${Object.values(item.variation.combination).join(", ")})`
+      ? `\n   › ${Object.entries(item.variation.combination).map(([k, v]) => `${k}: ${v}`).join(", ")}`
       : ""
-    msg += `${i + 1}. ${item.product.name}${variationStr}\n`
-    msg += `   ${item.quantity} adet x $${item.unitPriceUsd.toFixed(2)} = $${item.lineTotalUsd.toFixed(2)}\n`
+    msg += `*${i + 1}. ${item.product.name}*${variationStr}\n`
+    msg += `   ${item.quantity} adet x ${item.unitPriceTl.toFixed(2)} TL = *${item.lineTotalTl.toFixed(2)} TL*\n\n`
   })
 
+  msg += `${line}\n`
+
   if (coupon) {
-    msg += `\n🎟️ *Kupon:* ${coupon.code} (-${coupon.discount.toFixed(2)} ₺)\n`
+    msg += `🎟 Kupon (${coupon.code}): -${coupon.discount.toFixed(2)} TL\n`
   }
 
-  msg += `\n💰 *Toplam:* $${totalUsd.toFixed(2)} / ${totalTl.toFixed(2)} ₺\n`
+  const finalTotal = coupon ? totalTl - coupon.discount : totalTl
+  msg += `💰 *TOPLAM: ${Math.max(0, finalTotal).toFixed(2)} TL*\n`
+  msg += `${line}\n`
 
   if (address) {
-    msg += `\n📍 *Adres:* ${address}\n`
+    msg += `\n📍 *Teslimat Adresi*\n${address}\n`
   }
 
   if (orderNote) {
-    msg += `\n📝 *Not:* ${orderNote}\n`
+    msg += `\n📝 *Siparis Notu*\n${orderNote}\n`
   }
 
   return msg

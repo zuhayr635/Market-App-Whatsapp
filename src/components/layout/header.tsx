@@ -23,10 +23,16 @@ interface Category {
 export function Header({
   siteName = "MARKET",
   categories = [],
+  whatsappNumber = "",
+  contactPhone = "",
 }: {
   siteName?: string
   categories?: Category[]
+  whatsappNumber?: string
+  contactPhone?: string
 }) {
+  const phoneDisplay = contactPhone || whatsappNumber || ""
+  const telHref = phoneDisplay ? `tel:${phoneDisplay.replace(/\s/g, "")}` : "#"
   const { data: session } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -44,30 +50,31 @@ export function Header({
             </div>
             {/* Right: phone with WhatsApp badge */}
             <div className="flex items-center gap-4">
-              <a
-                href="tel:+905551234567"
-                className="flex items-center gap-2 text-xs transition-colors"
-                style={{ color: '#9A9488' }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--market-primary)')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#9A9488')}
-              >
-                {/* WhatsApp badge */}
-                <span
-                  className="flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold"
-                  style={{ backgroundColor: '#25D366', color: '#fff', letterSpacing: '0.02em' }}
+              {phoneDisplay && (
+                <a
+                  href={telHref}
+                  className="flex items-center gap-2 text-xs transition-colors"
+                  style={{ color: '#9A9488' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--market-primary)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#9A9488')}
                 >
-                  WP
-                </span>
-                <Phone className="size-3" />
-                +90 555 123 4567
-              </a>
+                  <span
+                    className="flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+                    style={{ backgroundColor: '#25D366', color: '#fff', letterSpacing: '0.02em' }}
+                  >
+                    WP
+                  </span>
+                  <Phone className="size-3" />
+                  {phoneDisplay}
+                </a>
+              )}
             </div>
           </div>
         </div>
 
         {/* Main header */}
         <div className="border-b" style={{ borderColor: 'rgba(255,102,0,0.15)' }}>
-          <div className="mx-auto flex h-[68px] max-w-7xl items-center gap-6 px-6">
+          <div className="mx-auto flex h-[60px] max-w-7xl items-center gap-3 px-3 md:h-[68px] md:gap-6 md:px-6">
             {/* Mobile menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger
@@ -148,8 +155,8 @@ export function Header({
             </Sheet>
 
             {/* Logo */}
-            <Link href="/" className="flex-shrink-0">
-              <span className="text-2xl font-bold tracking-[0.08em]" style={{ color: 'var(--market-primary)' }}>
+            <Link href="/" className="flex-shrink-0 min-w-0">
+              <span className="text-lg font-bold tracking-[0.08em] md:text-2xl whitespace-nowrap block" style={{ color: 'var(--market-primary)' }}>
                 {siteName}
               </span>
             </Link>

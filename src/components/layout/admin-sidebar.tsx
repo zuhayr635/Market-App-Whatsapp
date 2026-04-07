@@ -66,7 +66,7 @@ export function AdminSidebar() {
 
   return (
     <aside
-      className="hidden h-screen flex-col transition-all duration-300 md:flex overflow-hidden"
+      className="hidden h-screen flex-col transition-[width] duration-150 md:flex overflow-hidden"
       style={{
         width: collapsed ? "56px" : "220px",
         backgroundColor: 'var(--admin-sidebar)',
@@ -120,26 +120,11 @@ export function AdminSidebar() {
                     <Link
                       href={item.href}
                       title={collapsed ? item.label : undefined}
-                      className="relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all duration-150"
-                      style={active ? {
-                        backgroundColor: 'var(--admin-teal-dim)',
-                        color: 'var(--admin-teal)',
-                        boxShadow: 'inset 2px 0 0 var(--admin-teal)',
-                      } : {
-                        color: 'var(--admin-text-muted)',
-                      }}
-                      onMouseEnter={e => {
-                        if (!active) {
-                          (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.04)'
-                          ;(e.currentTarget as HTMLElement).style.color = '#CBD5E1'
-                        }
-                      }}
-                      onMouseLeave={e => {
-                        if (!active) {
-                          (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
-                          ;(e.currentTarget as HTMLElement).style.color = 'var(--admin-text-muted)'
-                        }
-                      }}
+                      className={`relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors duration-100 ${
+                        active
+                          ? "text-[var(--admin-teal)] bg-[var(--admin-teal-dim)] shadow-[inset_2px_0_0_var(--admin-teal)]"
+                          : "text-[var(--admin-text-muted)] hover:bg-white/[0.04] hover:text-slate-300"
+                      }`}
                     >
                       <Icon className="size-4 shrink-0" />
                       {!collapsed && <span className="truncate">{item.label}</span>}
@@ -156,10 +141,7 @@ export function AdminSidebar() {
       <div className="shrink-0 p-2" style={{ borderTop: '1px solid var(--admin-border)' }}>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-all"
-          style={{ color: 'var(--admin-text-muted)' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.color = '#CBD5E1' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--admin-text-muted)' }}
+          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors duration-100 text-[var(--admin-text-muted)] hover:bg-white/[0.04] hover:text-slate-300"
         >
           {collapsed
             ? <PanelLeftOpen className="mx-auto size-4" />

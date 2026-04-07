@@ -157,40 +157,59 @@ export function VariationSelector({
                   const valObj = valueMap.get(valueName)
                   const isAvailable = available.has(valueName)
                   const isSelected = selected[vType.name] === valueName
+                  const displayImg =
+                    productValueImages[valObj?.id ?? ""] ||
+                    valObj?.image ||
+                    variations.find((v) => v.combination[vType.name] === valueName && v.imageUrl)?.imageUrl ||
+                    null
 
                   return (
-                    <button
-                      key={valueName}
-                      onClick={() => handleSelect(vType.name, valueName)}
-                      disabled={!isAvailable && !isSelected}
-                      title={valueName}
-                      className={cn(
-                        "relative h-9 w-9 rounded-full border-2 transition-all",
-                        isSelected
-                          ? "border-primary ring-2 ring-primary/30 scale-110"
-                          : "border-gray-200 hover:border-gray-400",
-                        !isAvailable && !isSelected && "opacity-40 cursor-not-allowed"
+                    <div key={valueName} className="relative group flex flex-col items-center gap-1">
+                      <span className="text-[18px] sm:text-[20px] text-center leading-tight max-w-[72px] sm:max-w-[48px] truncate text-foreground">
+                        {valueName}
+                      </span>
+                      <button
+                        onClick={() => handleSelect(vType.name, valueName)}
+                        disabled={!isAvailable && !isSelected}
+                        title={valueName}
+                        className={cn(
+                          "relative h-[72px] w-[72px] sm:h-12 sm:w-12 rounded-none border-2 transition-all overflow-hidden flex-shrink-0",
+                          isSelected
+                            ? "border-primary ring-2 ring-primary/30 scale-110"
+                            : "border-gray-200 hover:border-gray-400",
+                          !isAvailable && !isSelected && "opacity-40 cursor-not-allowed"
+                        )}
+                      >
+                        {displayImg ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={displayImg}
+                            alt={valueName}
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span
+                            className="absolute inset-0"
+                            style={{ backgroundColor: valObj?.colorCode || "#ccc" }}
+                          />
+                        )}
+                        {!isAvailable && !isSelected && (
+                          <span className="absolute inset-0 flex items-center justify-center">
+                            <span className="block h-[1px] w-full rotate-45 bg-gray-400" />
+                          </span>
+                        )}
+                      </button>
+                      {displayImg && (
+                        <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-[300px] h-[300px]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={displayImg}
+                            alt={valueName}
+                            className="w-full h-full rounded-xl object-cover shadow-xl border-2 border-white"
+                          />
+                        </div>
                       )}
-                    >
-                      {(productValueImages[valObj?.id ?? ""] || valObj?.image) ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={productValueImages[valObj?.id ?? ""] || valObj?.image || ""}
-                          alt={valueName}
-                          className="absolute inset-[3px] rounded-full object-cover"
-                        />
-                      ) : (
-                        <span
-                          className="absolute inset-[3px] rounded-full shadow-inner"
-                          style={{ backgroundColor: valObj?.colorCode || "#ccc" }}
-                        />
-                      )}
-                      {!isAvailable && !isSelected && (
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <span className="block h-[1px] w-full rotate-45 bg-gray-400" />
-                        </span>
-                      )}
-                    </button>
+                    </div>
                   )
                 })}
               </div>
@@ -208,7 +227,7 @@ export function VariationSelector({
                       onClick={() => handleSelect(vType.name, valueName)}
                       disabled={!isAvailable && !isSelected}
                       className={cn(
-                        "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all",
+                        "inline-flex items-center gap-1.5 rounded-none border px-3 py-1.5 text-sm font-medium transition-all",
                         isSelected
                           ? "border-primary bg-primary text-primary-foreground"
                           : "border-border bg-background text-foreground hover:border-primary/50",
