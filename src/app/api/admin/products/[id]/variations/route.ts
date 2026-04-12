@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth"
+import { auth } from "@/lib/auth-admin"
 import { db } from "@/lib/db"
 import { NextRequest, NextResponse } from "next/server"
 import { Prisma } from "@/generated/prisma"

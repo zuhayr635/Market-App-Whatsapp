@@ -159,6 +159,10 @@ export default function CartPage() {
   const handleWhatsAppOrder = async () => {
     if (!cart || cart.items.length === 0) return
     setSending(true)
+
+    // Pre-open the window synchronously before async ops to bypass popup blocker
+    const popup = window.open("", "_blank")
+
     try {
       const selectedAddress = addresses.find((a) => a.id === selectedAddressId)
       const addressText = selectedAddress
@@ -179,12 +183,21 @@ export default function CartPage() {
 
       if (!res.ok) {
         const data = await res.json()
+        if (popup) popup.close()
         throw new Error(data.error || "Sipariş oluşturulamadı")
       }
 
       const { whatsappUrl } = await res.json()
       window.dispatchEvent(new CustomEvent("cart-updated"))
-      window.open(whatsappUrl, "_blank")
+
+      // Navigate the pre-opened window to WhatsApp
+      if (popup) {
+        popup.location.href = whatsappUrl
+      } else {
+        window.location.href = whatsappUrl
+      }
+
+      toast.success("Siparişiniz oluşturuldu! WhatsApp açılıyor...")
       router.push("/siparislerim")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Sipariş gönderilemedi")

@@ -1,28 +1,39 @@
-import { auth } from "@/lib/auth"
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
+import { getToken } from "next-auth/jwt"
 
-export default auth((req) => {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
-  const session = req.auth
 
-  // Admin routes — require admin login
+  // Admin routes — check market-admin-session cookie
   if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/giris")) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (!session || (session.user as any)?.type !== "admin") {
+    const adminToken = await getToken({
+      req,
+      secret: process.env.AUTH_SECRET,
+      cookieName: "market-admin-session",
+    })
+    if (!adminToken) {
       return NextResponse.redirect(new URL("/admin/giris", req.url))
     }
+    return NextResponse.next()
   }
 
-  // Protected user routes
+  // Protected user routes — check authjs.session-token cookie
   const protectedPaths = ["/hesabim", "/sepet", "/siparislerim", "/favorilerim"]
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path))
 
-  if (isProtected && !session) {
-    return NextResponse.redirect(new URL("/giris", req.url))
+  if (isProtected) {
+    const userToken = await getToken({
+      req,
+      secret: process.env.AUTH_SECRET,
+      cookieName: "authjs.session-token",
+    })
+    if (!userToken) {
+      return NextResponse.redirect(new URL("/giris", req.url))
+    }
   }
 
   return NextResponse.next()
-})
+}
 
 export const config = {
   matcher: [

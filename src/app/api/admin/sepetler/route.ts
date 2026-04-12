@@ -1,6 +1,6 @@
 import { db } from "@/lib/db"
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { auth } from "@/lib/auth-admin"
 
 async function checkAdmin() {
   const session = await auth()

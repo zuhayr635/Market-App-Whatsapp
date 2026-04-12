@@ -230,6 +230,16 @@ export function ProductDetailClient({
     return product.salePriceUsd != null && product.salePriceUsd < product.priceUsd
   }, [product, selectedVariation])
 
+  // Minimum price across all variations (for "from X" display)
+  const minVariationPriceTl = useMemo(() => {
+    if (product.variations.length === 0) return null
+    const prices = product.variations.map((v) => {
+      if (v.salePrice != null) return v.salePrice * rate
+      return (product.priceUsd + (v.priceDiff || 0)) * rate
+    })
+    return Math.min(...prices)
+  }, [product.variations, product.priceUsd, rate])
+
   const currentPriceUsd = useMemo(() => {
     if (selectedVariation) {
       if (selectedVariation.salePrice != null) return selectedVariation.salePrice
@@ -407,24 +417,33 @@ export function ProductDetailClient({
 
           {/* Price section */}
           <div className="space-y-2">
-            <div className="flex items-baseline gap-3">
-              {hasDiscount && saleActive && (
-                <span className="text-lg text-muted-foreground line-through">
-                  {(originalPriceUsd * rate).toFixed(2)} ₺
+            {product.variations.length > 0 && !selectedVariation ? (
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm text-muted-foreground">başlayan fiyat</span>
+                <span className="text-2xl font-bold sm:text-3xl text-foreground">
+                  {minVariationPriceTl?.toFixed(2)} ₺
                 </span>
-              )}
-              <span className={`text-2xl font-bold sm:text-3xl ${hasDiscount && saleActive ? "text-red-600" : "text-foreground"}`}>
-                {currentPriceTl.toFixed(2)} ₺
-              </span>
-              {hasDiscount && saleActive && discountPercent > 0 && (
-                <span className="rounded-md bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
-                  %{discountPercent}
+              </div>
+            ) : (
+              <div className="flex items-baseline gap-3">
+                {hasDiscount && saleActive && (
+                  <span className="text-lg text-muted-foreground line-through">
+                    {(originalPriceUsd * rate).toFixed(2)} ₺
+                  </span>
+                )}
+                <span className={`text-2xl font-bold sm:text-3xl ${hasDiscount && saleActive ? "text-red-600" : "text-foreground"}`}>
+                  {currentPriceTl.toFixed(2)} ₺
                 </span>
-              )}
-            </div>
+                {hasDiscount && saleActive && discountPercent > 0 && (
+                  <span className="rounded-md bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
+                    %{discountPercent}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Sale countdown */}
-            {hasDiscount && saleActive && product.saleEnd && (
+            {hasDiscount && saleActive && product.saleEnd && selectedVariation && (
               <SaleCountdown saleEnd={product.saleEnd} />
             )}
           </div>
@@ -477,13 +496,19 @@ export function ProductDetailClient({
               </div>
             )}
 
-            <AddToCartButton
-              isLoggedIn={isLoggedIn}
-              outOfStock={outOfStock}
-              productId={product.id}
-              variationId={selectedVariation?.id}
-              quantity={quantity}
-            />
+            {product.variations.length > 0 && !selectedVariation ? (
+              <Button size="lg" className="w-full" disabled>
+                Lütfen seçenek seçin
+              </Button>
+            ) : (
+              <AddToCartButton
+                isLoggedIn={isLoggedIn}
+                outOfStock={outOfStock}
+                productId={product.id}
+                variationId={selectedVariation?.id}
+                quantity={quantity}
+              />
+            )}
 
             {outOfStock && (
               <StockAlertForm productId={product.id} />

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { auth } from "@/lib/auth-admin"
 import { db } from "@/lib/db"
 
 // GET: fetch all value images for a product
